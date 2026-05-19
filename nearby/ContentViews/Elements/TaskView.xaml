@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="nearby.ContentViews.Elements.TaskView"
+             x:Name="thisControl"
+             BindingContext="{Binding Task, Source={x:Reference thisControl}}">
+    <Border Style="{StaticResource Card}">
+        <Border.GestureRecognizers>
+            <TapGestureRecognizer Command="{Binding GoToDetailCommand, Source={x:Reference thisControl}}"
+                              CommandParameter="{Binding .}"/>
+        </Border.GestureRecognizers>
+        <Grid RowDefinitions="Auto, Auto" ColumnDefinitions="*, Auto">
+            <Label Grid.Row="0" Grid.Column="0" Style="{StaticResource CommonLabel}" Text="{Binding Title}"/>
+            <Label Grid.Row="0" Grid.Column="1" Text="{Binding Reward, StringFormat='{0:F2}'}"  Style="{StaticResource EditLabel}" TextColor="{DynamicResource CPrimary}" HorizontalOptions="End"/>
+            <Label Grid.Row="1" Grid.Column="0" Text="{Binding Location}" Style="{StaticResource EditLabel}" />
+            <Label Grid.Row="1" Grid.Column="1" Text="{Binding Deadline, StringFormat='{0:dd.MM.yyyy}'}" Style="{StaticResource EditLabel}" HorizontalOptions="End"/>
+        </Grid>
+    </Border>
+</ContentView>

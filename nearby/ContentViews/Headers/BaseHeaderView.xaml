@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:nearby"
+             x:Class="nearby.ContentViews.Headers.BaseHeaderView"
+             x:Name="thisControl" Padding="0" Margin="0" 
+             Background="Transparent">
+    <VerticalStackLayout>
+        <Grid ColumnDefinitions="*, auto" Margin="{Binding InnerMargin, Source={x:Reference thisControl}}" HeightRequest="45">
+            <HorizontalStackLayout Grid.Column="0">
+                <ImageButton IsVisible="{Binding BackIsVisible, Source={x:Reference thisControl}}" local:IconHelper.Icon="{StaticResource Back}" local:IconHelper.Color="CTextPrimary" Command="{Binding BackCommand, Source={x:Reference thisControl}}" HorizontalOptions="Center" Margin="0"/>
+                <ContentView x:Name="ExtraContentView" IsVisible="False" VerticalOptions="Center"/>
+                <Label x:Name="TitleLabel" Style="{StaticResource SectionTitle}" Text="{Binding Text, Source={x:Reference thisControl}}" HorizontalOptions="Center" Margin="10,0,0,0" Padding="0" VerticalTextAlignment="Center"/>
+            </HorizontalStackLayout>
+            <HorizontalStackLayout Grid.Column="1" Margin="12,0,0,0" IsVisible="{Binding MenuIsVisible, Source={x:Reference thisControl}}">
+                <ImageButton local:IconHelper.Icon="{Binding Icon, Source={x:Reference thisControl}}" local:IconHelper.Color="CTextPrimary" Command="{Binding Command, Source={x:Reference thisControl}}" HorizontalOptions="Center" Margin="0"/>
+            </HorizontalStackLayout>
+        </Grid>
+        <BoxView Style="{StaticResource SplitLine}"/>
+    </VerticalStackLayout>
+</ContentView>

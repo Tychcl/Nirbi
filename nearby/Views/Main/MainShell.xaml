@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="nearby.Views.Main.MainShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:nearby"
+    xmlns:main="clr-namespace:nearby.Views.Main"
+    xmlns:loading="clr-namespace:nearby.Views"
+    Title="nearby">
+    <!-- Shell.NavBarIsVisible="False" если надо отлючить хрень сверху-->
+
+    <TabBar>
+        <ShellContent Title="Задачи" Icon="tasks.svg" ContentTemplate="{DataTemplate main:TasksPage}" />
+        <ShellContent Title="Фонды" Icon="funds.svg" ContentTemplate="{DataTemplate loading:LoadingPage}" />
+        <ShellContent Title="Чаты" Icon="chats.svg" ContentTemplate="{DataTemplate main:ChatsPage}" />
+        <ShellContent Title="Настройки" Icon="settings.svg" ContentTemplate="{DataTemplate main:SettingsPage}" />
+        <ShellContent Title="Профиль" Icon="profile.svg" ContentTemplate="{DataTemplate main:ProfilePage}" />
+    </TabBar>
+
+</Shell>

@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="nearby.Resources.Themes.LightBlueTheme">
+    <Color x:Key="CPrimary">#014BAA</Color>         <!-- Основной акцент (кнопки, иконки, ссылки) -->
+    <Color x:Key="CBackground">#FFFFFF</Color>      <!-- Основной фон страницы -->
+    <Color x:Key="CSurface">#F1F4F9</Color>         <!-- Карточки, блоки, фон полей -->
+    <Color x:Key="CBorder">#D4DCE8</Color>          <!-- Обводки, разделители -->
+    <Color x:Key="CTextPrimary">#0F172A</Color>     <!-- Основной текст -->
+    <Color x:Key="CTextSecondary">#5A6B80</Color>   <!-- Вторичный текст (дата, подписи) -->
+    <Color x:Key="CError">#DC2626</Color>
+    <Color x:Key="CSuccess">#059669</Color>
+    <Color x:Key="CWarning">#D97706</Color>
+</ResourceDictionary>

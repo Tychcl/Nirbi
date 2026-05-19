@@ -1,0 +1,15 @@
+<tk:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+          xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+          xmlns:tk="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+          x:Class="nearby.ContentViews.Elements.PopupMenu"
+          x:Name="thisControl"
+          Padding="0"
+          Margin="0"
+          BackgroundColor="Transparent">
+    <Border Style="{StaticResource Card}" Margin="0"
+        HorizontalOptions="Start" VerticalOptions="Start">
+        <VerticalStackLayout x:Name="MenuContainer"
+                         HorizontalOptions="Start" VerticalOptions="Start"
+                         Spacing="0" />
+    </Border>
+</tk:Popup>

@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<?xaml-comp compile="true" ?>
+<ResourceDictionary 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!--Common-->
+    <x:String x:Key="Search">&#xE8B6;</x:String>
+    <x:String x:Key="Confirm">&#xF88B;</x:String>
+    <x:String x:Key="Cancel">&#xF508;</x:String>
+    <x:String x:Key="Back">&#xF46B;</x:String>
+    <x:String x:Key="MenuDots">&#xE5D4;</x:String>
+    <x:String x:Key="AddPlus">&#xE145;</x:String>
+    <x:String x:Key="Delete">&#xE872;</x:String>
+    
+    <!--Profile-->
+    <x:String x:Key="Logout">&#xE9BA;</x:String>
+    <x:String x:Key="Mail">&#xE158;</x:String>
+    <x:String x:Key="Phone">&#xE0B0;</x:String>
+    <x:String x:Key="Chat">&#xE0B7;</x:String>
+    
+    <!--MainShell-->
+    <x:String x:Key="Tasks">&#xE85D;</x:String>
+    <x:String x:Key="Funds">&#xF5A4;</x:String>
+    <x:String x:Key="Chats">&#xE0Bf;</x:String>
+    <x:String x:Key="Settings">&#xE8B8;</x:String>
+    <x:String x:Key="Profile">&#xE853;</x:String>
+
+    <!--Visibility-->
+    <x:String x:Key="VisibleOn">&#xE8F4;</x:String>
+    <x:String x:Key="VisibleOff">&#xE8F5;</x:String>
+    
+    <!--AuthShell-->
+    <x:String x:Key="Login">&#xEA77;</x:String>
+    <x:String x:Key="Register">&#xE174;</x:String>
+
+    <!--Tasks-->
+    <x:String x:Key="FilterOff">&#xEB57;</x:String>
+    
+    <!--Chat-->
+    <x:String x:Key="Send">&#xE163;</x:String>
+    <x:String x:Key="ChatCreate">&#xF0F3;</x:String>
+    <x:String x:Key="GroupCreate">&#xF0F3;</x:String>
+    <x:String x:Key="AddUser">&#xE7FE;</x:String>
+    <x:String x:Key="Reply">&#xE15E;</x:String>
+    <x:String x:Key="Copy">&#xE14D;</x:String>
+
+    <!--ADD-->
+    <x:String x:Key="AddCircle">&#xE147;</x:String>
+    <x:String x:Key="AddTask">&#xF23A;</x:String>
+    <x:String x:Key="AddNote">&#xF848;</x:String>
+    <x:String x:Key="AddBox">&#xE146;</x:String> 
+    
+    <!--Edit-->
+    <x:String x:Key="Edit">&#xE3C9;</x:String>
+    <x:String x:Key="EditBox">&#xF88D;</x:String>
+    <x:String x:Key="EditNote">&#xE745;</x:String>
+
+    <!--Settings-->
+    <x:String x:Key="Theme">&#xE20C;</x:String>
+    <x:String x:Key="Language">&#xE894;</x:String>
+    
+</ResourceDictionary>

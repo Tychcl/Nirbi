@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="nearby.Views.Main.EditProfilePage"
+             xmlns:viewmodels="clr-namespace:nearby.ViewModels"
+             xmlns:models="clr-namespace:nearby.Models"
+             xmlns:header="clr-namespace:nearby.ContentViews.Headers"
+             xmlns:CVE="clr-namespace:nearby.ContentViews.Entry"
+             x:DataType="viewmodels:EditProfileViewModel"
+             BackgroundColor="{StaticResource CBackgroundLight}">
+    <Shell.TitleView>
+        <header:BaseHeaderView BackIsVisible="True" Command="{Binding SaveCommand}" MenuIsVisible="True" Text="Редактирование профиля" Icon="{StaticResource Confirm}"/>
+    </Shell.TitleView>
+    <ScrollView Orientation="Vertical">
+        <VerticalStackLayout Padding="0,16,0,20">
+            <Border Style="{StaticResource EditSection}">
+                <VerticalStackLayout>
+                    <Label Style="{StaticResource SectionTitle}" Text="Фото профиля"/>
+                    <Grid ColumnDefinitions="Auto, *" ColumnSpacing="16">
+                        <Border WidthRequest="80" HeightRequest="80" 
+                                    Stroke="{DynamicResource CBorder}" 
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 15"
+                                    HorizontalOptions="Start">
+                            <Image Source="{Binding User.ProfilePicture, TargetNullValue='test_profile_image.jpg'}"
+                                       Aspect="AspectFill">
+                                <Image.Clip>
+                                    <RoundRectangleGeometry CornerRadius="15" Rect="0,0,80,80"/>
+                                </Image.Clip>
+                            </Image>
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                            <Label Text="Нажмите, чтобы изменить" 
+                                       Style="{StaticResource CommonLabel}"
+                                       TextColor="{DynamicResource CPrimary}"
+                                       FontAttributes="Bold"/>
+                            <Label Text="JPG, PNG до 5 МБ" 
+                                       Style="{StaticResource SecondaryCommonLabel}"/>
+                        </VerticalStackLayout>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+            <Border Style="{StaticResource EditSection}">
+                <VerticalStackLayout>
+                    <Label Style="{StaticResource SectionTitle}" Text="ФИО"/>
+                    <Label Style="{StaticResource EditLabel}" Text="Полное имя *"/>
+                    <Entry Style="{StaticResource EditEntry}"
+                               Text="{Binding User.FullName, Mode=TwoWay}"
+                               Placeholder="Фамилия Имя Отчество"/>
+                </VerticalStackLayout>
+            </Border>
+            <Border Style="{StaticResource EditSection}">
+                <VerticalStackLayout>
+                    <Label Style="{StaticResource SectionTitle}" Text="Контакты"/>
+                    <Label Style="{StaticResource EditLabel}" Text="Город"/>
+                    <Entry Style="{StaticResource EditEntry}"
+                               Text="{Binding User.City, Mode=TwoWay}"
+                               Placeholder="Ваш город"/>
+                    <Label Style="{StaticResource EditLabel}" Text="Дата рождения"/>
+                    <DatePicker Date="{Binding User.BirthDate, Mode=TwoWay}"
+                                    Format="dd.MM.yyyy"
+                                    TextColor="{DynamicResource CTextPrimary}"
+                                    BackgroundColor="{DynamicResource CSurface}"
+                                    Margin="0,0,0,12"/>
+                    <Label Style="{StaticResource EditLabel}" Text="Телефон"/>
+                    <Entry Style="{StaticResource EditEntry}"
+                               Text="{Binding User.Phone, Mode=TwoWay}"
+                               Placeholder="+7 (___) ___-__-__"
+                               Keyboard="Telephone"/>
+                    <Label Style="{StaticResource EditLabel}" Text="Email"/>
+                    <Entry Style="{StaticResource EditEntry}"
+                               Text="{Binding User.Email, Mode=TwoWay}"
+                               Placeholder="email@example.com"
+                               Keyboard="Email"/>
+                </VerticalStackLayout>
+            </Border>
+            <Border Style="{StaticResource EditSection}">
+                <VerticalStackLayout>
+                    <Label Style="{StaticResource SectionTitle}" Text="О себе"/>
+                    <Editor Style="{StaticResource EditEditor}"
+                                Text="{Binding About, Mode=TwoWay}"
+                                Placeholder="Расскажите немного о себе..."
+                                MaxLength="500"/>
+                    <Label Text="{Binding AboutLength,StringFormat='{0}/500'}" 
+                               Style="{StaticResource SecondaryCommonLabel}"
+                               HorizontalOptions="End"/>
+                </VerticalStackLayout>
+            </Border>
+            <Border Style="{StaticResource EditSection}">
+                <VerticalStackLayout>
+                    <Label Style="{StaticResource SectionTitle}" Text="Образование"/>
+                    <Label Style="{StaticResource EditLabel}" Text="Учебное заведение"/>
+                    <Entry Style="{StaticResource EditEntry}"
+                               Text="{Binding User.EducationInstitution, Mode=TwoWay}"
+                               Placeholder="Название вуза/колледжа"/>
+                    <Label Style="{StaticResource EditLabel}" Text="Степень / Специальность"/>
+                    <Entry Style="{StaticResource EditEntry}"
+                               Text="{Binding User.EducationDegree, Mode=TwoWay}"
+                               Placeholder="Бакалавр, Магистр и т.д."/>
+                    <Label Style="{StaticResource EditLabel}" Text="Направление"/>
+                    <Entry Style="{StaticResource EditEntry}"
+                               Text="{Binding User.EducationField, Mode=TwoWay}"
+                               Placeholder="IT, Экономика, Медицина..."/>
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                        <VerticalStackLayout Grid.Column="0">
+                            <Label Style="{StaticResource EditLabel}" Text="Год начала"/>
+                            <Entry Style="{StaticResource EditEntry}"
+                                       Text="{Binding User.EducationStartYear, Mode=TwoWay}"
+                                       Placeholder="2020"
+                                       Keyboard="Numeric"
+                                       Margin="0"/>
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="1">
+                            <Label Style="{StaticResource EditLabel}" Text="Год окончания"/>
+                            <Entry Style="{StaticResource EditEntry}"
+                                       Text="{Binding User.EducationEndYear, Mode=TwoWay}"
+                                       Placeholder="2024"
+                                       Keyboard="Numeric"
+                                       Margin="0"/>
+                        </VerticalStackLayout>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+            <Border Style="{StaticResource EditSection}">
+                <VerticalStackLayout>
+                    <Label Style="{StaticResource SectionTitle}" Text="Подтверждение"/>
+                    <Label Style="{StaticResource EditLabel}" Text="Текущий пароль *"/>
+                    <CVE:Password Text="{Binding CurrentPassword, Mode=TwoWay}" Placeholder="••••••••" />
+                    <Label Text="Пароль необходим для подтверждения изменений" 
+                               Style="{StaticResource SecondaryCommonLabel}"/>
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

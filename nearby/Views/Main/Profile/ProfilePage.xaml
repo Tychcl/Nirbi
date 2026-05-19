@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="nearby.Views.Main.ProfilePage"
+             xmlns:models="clr-namespace:nearby.Models"
+             xmlns:elements="clr-namespace:nearby.ContentViews.Elements"
+             xmlns:header="clr-namespace:nearby.ContentViews.Headers"
+             xmlns:local="clr-namespace:nearby.ViewModels"
+             xmlns:ih="clr-namespace:nearby"
+             x:DataType="local:ProfileViewModel"
+             BackgroundColor="{StaticResource CBackgroundLight}">
+    <Shell.TitleView>
+        <header:BaseHeaderView BackIsVisible="{Binding IsOwnProfile, Converter={StaticResource InverseBoolConverter}}" Text="Профиль" Icon="{StaticResource EditBox}" MenuIsVisible="True" Command="{Binding GoToEditCommand}"/>
+    </Shell.TitleView>
+    <ScrollView Grid.Row="0" Orientation="Vertical" VerticalScrollBarVisibility="Never" Padding="0,16,0,5">
+        <VerticalStackLayout Padding="0">
+            <Border Style="{StaticResource EditSection}">
+                <elements:MiniUserProfile User="{Binding User}">
+                    <VerticalStackLayout Grid.Column="2" VerticalOptions="Center" Spacing="8">
+                        <Border Style="{StaticResource Button}" 
+                                WidthRequest="70" HeightRequest="70"
+                                IsVisible="{Binding IsOwnProfile, Converter={StaticResource InverseBoolConverter}}"
+                                Margin="0">
+                            <Image ih:IconHelper.Icon="{StaticResource Chat}" Scale="0.7"/>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding StartChatCommand}"/>
+                            </Border.GestureRecognizers>
+                        </Border>
+                        <Border Style="{StaticResource Button}" 
+                                WidthRequest="70" HeightRequest="70"
+                                Stroke="{DynamicResource CError}"
+                                IsVisible="{Binding IsOwnProfile}"
+                                Margin="0">
+                            <Image ih:IconHelper.Icon="{StaticResource Logout}" Scale="0.7"/>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding LogoutCommand}"/>
+                            </Border.GestureRecognizers>
+                        </Border>
+                    </VerticalStackLayout>
+                </elements:MiniUserProfile>
+            </Border>
+            <Border Style="{StaticResource EditSection}">
+                <VerticalStackLayout>
+                    <Label Style="{StaticResource SectionTitle}" Text="Контакты"/>
+                    <ScrollView HorizontalScrollBarVisibility="Never" Orientation="Horizontal">
+                        <HorizontalStackLayout Spacing="12">
+                            <elements:ContactView Image="{StaticResource Phone}" 
+                                                      Title="Телефон" 
+                                                      Text="{Binding User.Phone}"
+                                                      Margin="0"/>
+                            <elements:ContactView Image="{StaticResource Mail}" 
+                                                      Title="Почта" 
+                                                      Text="{Binding User.Email}"/>
+                            <elements:ContactView Image="{StaticResource Send}" 
+                                                      Title="Телеграм" 
+                                                      Text="@Tychcl"/>
+                        </HorizontalStackLayout>
+                    </ScrollView>
+                </VerticalStackLayout>
+            </Border>
+            <Border Style="{StaticResource EditSection}" IsVisible="{Binding User.About, Converter={StaticResource IsNotNullConverter}}">
+                <VerticalStackLayout>
+                    <Label Style="{StaticResource SectionTitle}" Text="О себе"/>
+                    <Label Style="{StaticResource EditEntry}" 
+                               Text="{Binding User.About}"
+                               LineBreakMode="WordWrap"/>
+                </VerticalStackLayout>
+            </Border>
+            <Border Style="{StaticResource EditSection}" 
+                        IsVisible="{Binding User.EducationInstitution, Converter={StaticResource IsNotNullConverter}}">
+                <VerticalStackLayout>
+                    <Label Style="{StaticResource SectionTitle}" Text="Образование"/>
+                    <VerticalStackLayout Spacing="4">
+                        <Label Style="{StaticResource EditEntry}" 
+                                   Text="{Binding User.EducationInstitution}"
+                                   FontAttributes="Bold"/>
+                        <Label Style="{StaticResource EditLabel}" 
+                                   Text="{Binding User.EducationField}"/>
+                        <Label Style="{StaticResource EditLabel}" 
+                                   Text="{Binding User.EducationDegree}" 
+                                   TextColor="{DynamicResource CTextSecondary}"/>
+
+                        <Label TextColor="{DynamicResource CTextSecondary}" Margin="0,8,0,0">
+                            <Label.Text>
+                                <MultiBinding StringFormat="{}{0} — {1}">
+                                    <Binding Path="User.EducationStartYear"/>
+                                    <Binding Path="User.EducationEndYear"/>
+                                </MultiBinding>
+                            </Label.Text>
+                        </Label>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Секция: Статистика аккаунта (только чтение) 
+                <Border Style="{StaticResource EditSection}">
+                    <VerticalStackLayout>
+                        <Label Style="{StaticResource SectionTitle}" Text="Статистика"/>
+
+                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="10" ColumnSpacing="12">
+
+                            <Label Grid.Row="0" Grid.Column="0" Text="Баланс" Style="{StaticResource EditLabel}"/>
+                            <Label Grid.Row="0" Grid.Column="1" 
+                                   Text="{Binding User.Balance, StringFormat='{0:N2} ₽'}" 
+                                   Style="{StaticResource SectionTitle}"/>
+
+                            <Label Grid.Row="1" Grid.Column="0" Text="Рейтинг" Style="{StaticResource EditLabel}"/>
+                            <Label Grid.Row="1" Grid.Column="1" 
+                                   Text="{Binding User.AverageRating, StringFormat='{0:F1} ⭐'}" 
+                                   Style="{StaticResource SectionTitle}"/>
+
+                            <Label Grid.Row="2" Grid.Column="0" Text="Статус" Style="{StaticResource EditLabel}"/>
+                            <Label Grid.Row="2" Grid.Column="1" 
+                                   Text="{Binding User.AvailabilityStatus}"
+                                   TextColor="{StaticResource CPrimaryLight}"
+                                   FontAttributes="Bold"/>
+
+                            <Label Grid.Row="3" Grid.Column="0" Text="На сайте с" Style="{StaticResource EditLabel}"/>
+                            <Label Grid.Row="3" Grid.Column="1" 
+                                   Text="{Binding User.CreatedAt, StringFormat='{0:MMM yyyy}'}"
+                                   Style="{StaticResource CommonLabel}"/>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>-->
+            <Border Style="{StaticResource EditSection}">
+                <VerticalStackLayout>
+                    <Label Style="{StaticResource SectionTitle}" Text="Задачи"/>
+                    <ScrollView HorizontalScrollBarVisibility="Never" Orientation="Horizontal" Margin="-16,-8,-16,8">
+                        <HorizontalStackLayout Spacing="8" HorizontalOptions="Center">
+                            <Border Padding="16,10"
+                                        StrokeThickness="0">
+                                <VerticalStackLayout>
+                                    <Label Style="{StaticResource CommonLabel}" Text="Актуальные"/>
+                                    <BoxView BackgroundColor="{Binding SelectedCategory, Converter={StaticResource ColorConverter}, ConverterParameter={x:Static local:TaskCategory.Created}}" HeightRequest="2" Margin="0,3,0,0"/>
+                                </VerticalStackLayout>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SelectCategoryCommand}" 
+                                                              CommandParameter="{x:Static local:TaskCategory.Created}"/>
+                                </Border.GestureRecognizers>
+                            </Border>
+                            <Border Padding="16,10" 
+                                        StrokeThickness="0">
+                                <VerticalStackLayout>
+                                    <Label Text="В работе" Style="{StaticResource CommonLabel}"/>
+                                    <BoxView BackgroundColor="{Binding SelectedCategory, Converter={StaticResource ColorConverter}, ConverterParameter={x:Static local:TaskCategory.InProgress}}" HeightRequest="2" Margin="0,3,0,0"/>
+                                </VerticalStackLayout>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SelectCategoryCommand}" 
+                                                              CommandParameter="{x:Static local:TaskCategory.InProgress}"/>
+                                </Border.GestureRecognizers>
+                            </Border>
+                            <Border Padding="16,10" 
+                                        StrokeThickness="0">
+                                <VerticalStackLayout>
+                                    <Label Text="Выполненные" Style="{StaticResource CommonLabel}" />
+                                    <BoxView BackgroundColor="{Binding SelectedCategory, Converter={StaticResource ColorConverter}, ConverterParameter={x:Static local:TaskCategory.Completed}}" HeightRequest="2" Margin="0,3,0,0"/>
+                                </VerticalStackLayout>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SelectCategoryCommand}" 
+                                                              CommandParameter="{x:Static local:TaskCategory.Completed}"/>
+                                </Border.GestureRecognizers>
+                            </Border>
+                        </HorizontalStackLayout>
+                    </ScrollView>
+                    <CollectionView ItemsSource="{Binding UserTasks}"
+                                        RemainingItemsThreshold="3"
+                                        RemainingItemsThresholdReachedCommand="{Binding LoadUserTasksCommand}"
+                                        VerticalOptions="Fill"
+                                        HorizontalOptions="Fill"
+                                        HeightRequest="300">
+                        <CollectionView.EmptyView>
+                            <VerticalStackLayout HorizontalOptions="Center">
+                                <Label Text="Задач пока нет" 
+                                           Style="{StaticResource CommonLabel}" 
+                                           TextColor="{DynamicResource CTextSecondary}"
+                                           HorizontalOptions="Center"
+                                           Margin="0,12,0,0"/>
+                            </VerticalStackLayout>
+                        </CollectionView.EmptyView>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:TaskItem">
+                                <elements:TaskView Task="{Binding .}" GoToDetailCommand="{Binding Source={RelativeSource AncestorType={x:Type local:ProfileViewModel}}, Path=TaskSelectedCommand}" Padding="-20,0,-20,0"/>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

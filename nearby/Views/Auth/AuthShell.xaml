@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="nearby.Views.Auth.AuthShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:nearby"
+    xmlns:auth="clr-namespace:nearby.Views.Auth"
+    Title="nearby"
+    Shell.NavBarIsVisible="False">
+
+    <TabBar>
+        <ShellContent Title="Вход" 
+                      Icon="login.svg" 
+                      ContentTemplate="{DataTemplate auth:LoginPage}"/>
+        <ShellContent Title="Регистрация" 
+                      Icon="register.svg"
+                      ContentTemplate="{DataTemplate auth:RegPage}"/>
+    </TabBar>
+
+</Shell>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:header="clr-namespace:nearby.ContentViews.Headers"
+             xmlns:element="clr-namespace:nearby.ContentViews.Elements"
+             x:Class="nearby.Views.Main.ChatsPage"
+             xmlns:viewModels="clr-namespace:nearby.ViewModels"
+             xmlns:models="clr-namespace:nearby.Models"
+             Title="Чаты"
+             x:DataType="viewModels:ChatsViewModel">
+    <Shell.TitleView>
+        <header:BaseHeaderView Text="Чаты" Icon="{StaticResource ChatCreate}" MenuIsVisible="True" Command="{Binding CreateChatCommand}"/>
+    </Shell.TitleView>
+    <RefreshView IsRefreshing="{Binding IsRefreshing}"
+                 Command="{Binding RefreshCommand}"
+                 Margin="0,15,0,0"
+                 VerticalOptions="Fill">
+        <CollectionView ItemsSource="{Binding Chats}"
+                            SelectionMode="None"
+                            RemainingItemsThreshold="3"
+                            RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Chat">
+                    <Border Style="{StaticResource Card}" Padding="5">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewModels:ChatsViewModel}}, Path=GoToChatDetailCommand}"
+                                                      CommandParameter="{Binding .}"/>
+                        </Border.GestureRecognizers>
+                        <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="8" Padding="5">
+                            <element:ProfileImageView Grid.Column="0" ImageSize="50" Image="test_profile_image.jpg"/>
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Start" Spacing="2">
+                                <Label Text="{Binding Name}" Style="{StaticResource BoldCommonLabel}"/>
+                                <Label Text="{Binding LastMessage.Content, FallbackValue='Сообщений пока нет :с', TargetNullValue='Сообщений пока нет :с'}" Style="{StaticResource CommonLabel}" TextColor="{DynamicResource CTextSecondary}" MaxLines="1" LineBreakMode="TailTruncation"/>
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="2" VerticalOptions="Start" Spacing="4">
+                                <Label Text="{Binding LastMessage.CreatedAt, StringFormat='{0:dd.MM HH:mm}'}"
+                                           Style="{StaticResource SecondaryCommonLabel}"
+                                           HorizontalOptions="End"/>
+                                <Border Background="{DynamicResource CPrimary}"
+                                            StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 10"
+                                            Padding="6,2"
+                                            HorizontalOptions="End"
+                                            VerticalOptions="End"
+                                            IsVisible="{Binding UnreadCount, Converter={StaticResource GreaterThanConverter}, ConverterParameter='0'}">
+                                    <Label Text="{Binding UnreadCount}" TextColor="{DynamicResource CBackground}" Style="{StaticResource SecondaryCommonLabel}"/>
+                                </Border>
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </RefreshView>
+</ContentPage>

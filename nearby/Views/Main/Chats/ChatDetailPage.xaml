@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="nearby.Views.Main.ChatDetailPage"
+             xmlns:viewModels="clr-namespace:nearby.ViewModels"
+             xmlns:header="clr-namespace:nearby.ContentViews.Headers"
+             xmlns:ih="clr-namespace:nearby"
+             xmlns:element="clr-namespace:nearby.ContentViews.Elements"
+             xmlns:models="clr-namespace:nearby.Models"
+             xmlns:converters="clr-namespace:nearby.Classes.Interface.Converters"
+             x:DataType="viewModels:ChatDetailViewModel"
+             Shell.TabBarIsVisible="False">
+    <Shell.TitleView>
+        <header:BaseHeaderView BackIsVisible="True" MenuIsVisible="True" Icon="{StaticResource MenuDots}">
+            <header:BaseHeaderView.ExtraContent>
+                <HorizontalStackLayout Margin="0,5" Spacing="5" VerticalOptions="Center">
+                    <element:ProfileImageView ImageSize="45"/>
+                    <VerticalStackLayout VerticalOptions="Center">
+                        <Label Style="{StaticResource SectionTitle}" Text="{Binding Chat.Name, FallbackValue='Чат'}" Padding="0" Margin="0" VerticalTextAlignment="Start" FontFamily="OpenSansBold"/>
+                        <Label Style="{StaticResource CommonLabel}" Text="{Binding Chat.OtherUser.LastSeenAt, FallbackValue='Чат'}" Padding="0" VerticalTextAlignment="Start" TextColor="{DynamicResource CTextSecondary}"/>
+                    </VerticalStackLayout>
+                </HorizontalStackLayout>
+            </header:BaseHeaderView.ExtraContent>
+        </header:BaseHeaderView>
+    </Shell.TitleView>
+    <Grid RowDefinitions="*, Auto">
+        <CollectionView ItemsSource="{Binding Messages}"
+                        SelectionMode="None" Grid.Row="0"
+                        RemainingItemsThreshold="3"
+                        RemainingItemsThresholdReachedCommand="{Binding LoadMoreMessagesCommand}"
+                        VerticalOptions="End"
+                        x:Name="ChatCollectionView"
+                        ItemsUpdatingScrollMode="KeepLastItemInView"
+                        MaximumHeightRequest="716">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:Message">
+                        <element:MessageView 
+                            CurrentUserId="{Binding Source={RelativeSource AncestorType={x:Type viewModels:ChatDetailViewModel}}, Path=CurentUserId}" 
+                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewModels:ChatDetailViewModel}}, Path=OpenMenuCommand}"
+                            ReplyCommand="{Binding Source={RelativeSource AncestorType={x:Type viewModels:ChatDetailViewModel}}, Path=GoToReplyedMessageCommand}"
+                            Message="{Binding .}"/>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        <Border Grid.Row="2" 
+                Style="{StaticResource Card}" 
+                Padding="0" Margin="5,0,5,5"
+                StrokeShape="RoundRectangle 25"
+                Background="Transparent">
+            <Grid RowDefinitions="Auto, *">
+                <Grid Grid.Row="0" ColumnSpacing="5"
+                      ColumnDefinitions="Auto, *, Auto"  
+                      IsVisible="{Binding CurrentAction, Converter={StaticResource IsNotNullConverter}}">
+                    <Image Grid.Column="0" 
+                           ih:IconHelper.Icon="{Binding CurrentActionIcon}" 
+                           Margin="7,0"
+                           WidthRequest="30" HeightRequest="30"
+                           VerticalOptions="Center" HorizontalOptions="Center"/>
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                        <Label Style="{StaticResource BoldCommonLabel}"
+                               Text="{Binding CurrentActionName}"
+                               TextColor="{DynamicResource CPrimary}"
+                               Margin="0" Padding="0"/>
+                        <Label Style="{StaticResource EditLabel}"
+                               Text="{Binding CurrentActionDescription}"
+                               MaxLines="1" LineBreakMode="TailTruncation"
+                               Margin="0" Padding="0"/>
+                    </VerticalStackLayout>
+                    <ImageButton Grid.Column="2" 
+                                 ih:IconHelper.Icon="{StaticResource Cancel}"
+                                 HorizontalOptions="Center"
+                                 VerticalOptions="Center"
+                                 Command="{Binding CancelActionCommand}"/>
+                    <BoxView Grid.ColumnSpan="3" Style="{StaticResource SplitLine}" VerticalOptions="End"/>
+                </Grid>
+                <Grid Grid.Row="1" ColumnDefinitions="Auto, *, Auto" ColumnSpacing="5">
+                    <ImageButton Grid.Column="0" 
+                                 ih:IconHelper.Icon="{StaticResource AddPlus}" 
+                                 ih:IconHelper.Size="40" Margin="0"
+                                 WidthRequest="40" HeightRequest="40"
+                                 VerticalOptions="End"/>
+                    <element:NoUnderlineEditor Grid.Column="1"
+                            Style="{StaticResource EditEditor}"
+                            Placeholder="Введите сообщение..."
+                            Text="{Binding NewMessageText}"
+                            AutoSize="TextChanges"
+                            MaximumHeightRequest="100"
+                            VerticalOptions="End"
+                            Margin="0"/>
+                    <Border Grid.Column="2" StrokeThickness="0"
+                            Style="{StaticResource Button}"
+                            BackgroundColor="{DynamicResource CPrimary}"
+                            StrokeShape="RoundRectangle 30"
+                            WidthRequest="35" HeightRequest="35"
+                            Padding="5" Margin="5"
+                            VerticalOptions="End">
+                        <Image ih:IconHelper.Icon="{StaticResource Send}" ih:IconHelper.Size="40" ih:IconHelper.Color="CBackground"/>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding SendMessageCommand}"/>
+                        </Border.GestureRecognizers>
+                    </Border>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</ContentPage>

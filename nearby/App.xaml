@@ -1,0 +1,30 @@
+﻿<?xml version = "1.0" encoding = "UTF-8" ?>
+<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:nearby"
+             xmlns:converters="clr-namespace:nearby.Classes.Interface.Converters"
+             x:Class="nearby.App">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
+                <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
+                <ResourceDictionary Source="Resources/Styles/Icons.xaml" />
+                <!--Themes-->
+                <ResourceDictionary Source="/Resources/Themes/LightBlueTheme.xaml" />
+                <ResourceDictionary Source="/Resources/Themes/LightPurpleTheme.xaml" />
+                <ResourceDictionary Source="/Resources/Themes/DarkOrangeTheme.xaml" />
+                <ResourceDictionary Source="/Resources/Themes/DarkGreenTheme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <!--CONVERTERS-->
+            <converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
+            <converters:ColorConverter x:Key="ColorConverter"/>
+            <converters:LengthConverter x:Key="LengthConverter"/>
+            <converters:MessageAlignmentConverter x:Key="MessageAlignmentConverter"/>
+            <converters:IsNotNullConverter x:Key="IsNotNullConverter"/>
+            <converters:AndConverter x:Key="AndConverter"/>
+            <converters:DoubleToRectConverter x:Key="DoubleToRectConverter"/>
+            <converters:GreaterThanConverter x:Key="GreaterThanConverter"/>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:header="clr-namespace:nearby.ContentViews.Headers"
+             xmlns:local="clr-namespace:nearby"
+             x:Class="nearby.Views.Main.TasksPage"
+             xmlns:viewModels="clr-namespace:nearby.ViewModels"
+             xmlns:models="clr-namespace:nearby.Models"
+             Title="Задачи"
+             xmlns:elements="clr-namespace:nearby.ContentViews.Elements"
+             x:DataType="viewModels:TasksViewModel"
+             x:Name="thisControl">
+    <Shell.TitleView>
+        <header:BaseHeaderView Text="{Binding Title, Source={x:Reference thisControl}}" BackIsVisible="False" Icon="{StaticResource AddNote}" MenuIsVisible="True" Command="{Binding GoToCreateCommand}"/>
+    </Shell.TitleView>
+    <Grid RowDefinitions="Auto, *" RowSpacing="12" Margin="0,16,0,0">
+        <Border Style="{StaticResource Card}" Grid.Row="0" Margin="20,0,20,0">
+            <VerticalStackLayout Spacing="5">
+                <Grid ColumnDefinitions="*, Auto">
+                    <Label Text="Фильтры" Style="{StaticResource SectionTitle}" Margin="0" Grid.Column="0" VerticalOptions="Center"/>
+                    <Button Grid.Column="1" Style="{StaticResource BorderButton}" local:IconHelper.Icon="{StaticResource FilterOff}" local:IconHelper.Color="CBackground" Command="{Binding FilterClearCommand}"/>
+                </Grid>
+                <HorizontalStackLayout Spacing="5">
+                    <Picker Title="Приоритет" SelectedItem="{Binding PriorityFilter}" WidthRequest="120" ItemsSource="{Binding PriorityList}"/>
+                    <Entry Placeholder="Город" Text="{Binding CityFilter}" WidthRequest="120"/>
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+        </Border>
+        <RefreshView Grid.Row="1" 
+                     IsRefreshing="{Binding IsRefreshing}" 
+                     Command="{Binding RefreshCommand}"
+                     VerticalOptions="Fill">
+            <CollectionView ItemsSource="{Binding Tasks}" 
+                            SelectionMode="None"
+                            RemainingItemsThreshold="3"
+                            RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}"
+                            VerticalOptions="Fill">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:TaskItem">
+                        <elements:TaskView Task="{Binding .}" GoToDetailCommand="{Binding Source={RelativeSource AncestorType={x:Type viewModels:TasksViewModel}}, Path=GoToDetailCommand}"/>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+    </Grid>
+</ContentPage>

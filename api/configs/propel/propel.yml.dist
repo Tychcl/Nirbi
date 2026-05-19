@@ -1,5 +1,0 @@
-propel:
-    paths:
-        # The directory where Propel expects to find your `schema.xml` file.
-        schemaDir: propel/
-        phpDir: src/classes/

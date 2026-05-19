@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="nearby.Resources.Themes.LightPurpleTheme">
+    <Color x:Key="CPrimary">#8B5CF6</Color>
+    <Color x:Key="CBackground">#FFFFFF</Color>
+    <Color x:Key="CSurface">#F5F3FF</Color>
+    <Color x:Key="CBorder">#DDD6FE</Color>
+    <Color x:Key="CTextPrimary">#1E1B4B</Color>
+    <Color x:Key="CTextSecondary">#6B7280</Color>
+    <Color x:Key="CError">#EF4444</Color>
+    <Color x:Key="CSuccess">#10B981</Color>
+    <Color x:Key="CWarning">#F59E0B</Color>
+</ResourceDictionary>
