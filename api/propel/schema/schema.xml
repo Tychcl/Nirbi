@@ -1,0 +1,471 @@
+<?xml version="1.0" encoding="utf-8"?>
+<database name="default" defaultIdMethod="native" namespace="\Models" defaultPhpNamingMethod="underscore">
+  <table name="balance_transactions" idMethod="native" phpName="BalanceTransactions" description="История изменений баланса">
+    <column name="id" phpName="Id" type="INTEGER" sqlType="int unsigned" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="user_id" phpName="UserId" type="INTEGER" sqlType="int unsigned" required="true"/>
+    <column name="amount" phpName="Amount" type="DECIMAL" size="10" scale="2" description="Изменение баланса (может быть отрицательным)" required="true"/>
+    <column name="balance_after" phpName="BalanceAfter" type="DECIMAL" size="10" scale="2" description="Баланс после операции" required="true"/>
+    <column name="type" phpName="Type" type="CHAR" sqlType="enum('task_reward','task_cancellation','project_reward','withdrawal','refill')" required="true"/>
+    <column name="reference_type" phpName="ReferenceType" type="CHAR" sqlType="enum('task','project')"/>
+    <column name="reference_id" phpName="ReferenceId" type="INTEGER" sqlType="int unsigned"/>
+    <column name="created_at" phpName="CreatedAt" type="TIMESTAMP" defaultExpr="CURRENT_TIMESTAMP"/>
+    <foreign-key foreignTable="users" name="balance_transactions_ibfk_1" onDelete="CASCADE">
+      <reference local="user_id" foreign="id"/>
+    </foreign-key>
+    <index name="idx_user">
+      <index-column name="user_id"/>
+    </index>
+    <index name="idx_created">
+      <index-column name="created_at"/>
+    </index>
+    <vendor type="mysql">
+      <parameter name="Engine" value="InnoDB"/>
+    </vendor>
+  </table>
+  <table name="chat_members" idMethod="native" phpName="ChatMembers" description="Участники чатов">
+    <column name="id" phpName="Id" type="INTEGER" sqlType="int unsigned" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="chat_id" phpName="ChatId" type="INTEGER" sqlType="int unsigned" required="true"/>
+    <column name="user_id" phpName="UserId" type="INTEGER" sqlType="int unsigned" required="true"/>
+    <column name="joined_at" phpName="JoinedAt" type="TIMESTAMP" defaultExpr="CURRENT_TIMESTAMP"/>
+    <column name="last_read_message_id" phpName="LastReadMessageId" type="INTEGER" sqlType="int unsigned" description="Последнее прочитанное сообщение"/>
+    <foreign-key foreignTable="chats" name="chat_members_ibfk_1" onDelete="CASCADE">
+      <reference local="chat_id" foreign="id"/>
+    </foreign-key>
+    <foreign-key foreignTable="users" name="chat_members_ibfk_2" onDelete="CASCADE">
+      <reference local="user_id" foreign="id"/>
+    </foreign-key>
+    <foreign-key foreignTable="messages" name="fk_last_read_message" onDelete="SET NULL">
+      <reference local="last_read_message_id" foreign="id"/>
+    </foreign-key>
+    <index name="user_id">
+      <index-column name="user_id"/>
+    </index>
+    <index name="fk_last_read_message">
+      <index-column name="last_read_message_id"/>
+    </index>
+    <unique name="unique_chat_user">
+      <unique-column name="chat_id"/>
+      <unique-column name="user_id"/>
+    </unique>
+    <vendor type="mysql">
+      <parameter name="Engine" value="InnoDB"/>
+    </vendor>
+  </table>
+  <table name="chats" idMethod="native" phpName="Chats" description="Чаты">
+    <column name="id" phpName="Id" type="INTEGER" sqlType="int unsigned" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="type" phpName="Type" type="CHAR" sqlType="enum('personal','group')" required="true"/>
+    <column name="name" phpName="Name" type="VARCHAR" size="255" description="Название группового чата"/>
+    <column name="created_at" phpName="CreatedAt" type="TIMESTAMP" defaultExpr="CURRENT_TIMESTAMP"/>
+    <vendor type="mysql">
+      <parameter name="Engine" value="InnoDB"/>
+    </vendor>
+  </table>
+  <table name="messages" idMethod="native" phpName="Messages" description="Сообщения">
+    <column name="id" phpName="Id" type="INTEGER" sqlType="int unsigned" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="chat_id" phpName="ChatId" type="INTEGER" sqlType="int unsigned" required="true"/>
+    <column name="sender_id" phpName="SenderId" type="INTEGER" sqlType="int unsigned" description="Отправитель (пользователь)" required="true"/>
+    <column name="content_type" phpName="ContentType" type="CHAR" sqlType="enum('text','image','file','voice')" defaultValue="text"/>
+    <column name="content" phpName="Content" type="LONGVARCHAR" description="Текст сообщения или ссылка на файл"/>
+    <column name="file_url" phpName="FileUrl" type="VARCHAR" size="500" description="URL файла (если есть)"/>
+    <column name="transcribed_text" phpName="TranscribedText" type="LONGVARCHAR" description="Распознанный текст голосового сообщения"/>
+    <column name="created_at" phpName="CreatedAt" type="TIMESTAMP" defaultExpr="CURRENT_TIMESTAMP"/>
+    <column name="reply" phpName="Reply" type="INTEGER" sqlType="int unsigned"/>
+    <foreign-key foreignTable="chats" name="messages_ibfk_1" onDelete="CASCADE">
+      <reference local="chat_id" foreign="id"/>
+    </foreign-key>
+    <foreign-key foreignTable="users" name="messages_ibfk_2" onDelete="CASCADE">
+      <reference local="sender_id" foreign="id"/>
+    </foreign-key>
+    <foreign-key foreignTable="messages" name="messages_ibfk_3" onDelete="CASCADE" onUpdate="CASCADE">
+      <reference local="reply" foreign="id"/>
+    </foreign-key>
+    <index name="idx_chat">
+      <index-column name="chat_id"/>
+    </index>
+    <index name="idx_sender">
+      <index-column name="sender_id"/>
+    </index>
+    <index name="reply">
+      <index-column name="reply"/>
+    </index>
+    <vendor type="mysql">
+      <parameter name="Engine" value="InnoDB"/>
+    </vendor>
+  </table>
+  <table name="notifications" idMethod="native" phpName="Notifications" description="Уведомления пользователей">
+    <column name="id" phpName="Id" type="INTEGER" sqlType="int unsigned" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="user_id" phpName="UserId" type="INTEGER" sqlType="int unsigned" required="true"/>
+    <column name="type" phpName="Type" type="CHAR" sqlType="enum('project_invite','task_invite','task_status_change','project_status_change','new_message','rating_received','organization_verified')" required="true"/>
+    <column name="content" phpName="Content" type="LONGVARCHAR" required="true"/>
+    <column name="reference_type" phpName="ReferenceType" type="CHAR" sqlType="enum('task','project','chat','user')"/>
+    <column name="reference_id" phpName="ReferenceId" type="INTEGER" sqlType="int unsigned"/>
+    <column name="is_read" phpName="IsRead" type="BOOLEAN" size="1" defaultValue="false"/>
+    <column name="created_at" phpName="CreatedAt" type="TIMESTAMP" defaultExpr="CURRENT_TIMESTAMP"/>
+    <foreign-key foreignTable="users" name="notifications_ibfk_1" onDelete="CASCADE">
+      <reference local="user_id" foreign="id"/>
+    </foreign-key>
+    <index name="idx_user">
+      <index-column name="user_id"/>
+    </index>
+    <index name="idx_read">
+      <index-column name="is_read"/>
+    </index>
+    <vendor type="mysql">
+      <parameter name="Engine" value="InnoDB"/>
+    </vendor>
+  </table>
+  <table name="organization_members" idMethod="native" phpName="OrganizationMembers" description="Связь пользователей с организациями и роли в них">
+    <column name="id" phpName="Id" type="INTEGER" sqlType="int unsigned" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="user_id" phpName="UserId" type="INTEGER" sqlType="int unsigned" description="Пользователь" required="true"/>
+    <column name="organization_id" phpName="OrganizationId" type="INTEGER" sqlType="int unsigned" description="Организация" required="true"/>
+    <column name="role" phpName="Role" type="CHAR" sqlType="enum('owner','manager','member')" description="Роль внутри организации" required="true" defaultValue="member"/>
+    <column name="status" phpName="Status" type="CHAR" sqlType="enum('pending','active')" description="Статус членства (ожидает подтверждения / активен)" defaultValue="pending"/>
+    <column name="added_by" phpName="AddedBy" type="INTEGER" sqlType="int unsigned" description="Кто добавил/пригласил (ссылка на users)"/>
+    <column name="created_at" phpName="CreatedAt" type="TIMESTAMP" defaultExpr="CURRENT_TIMESTAMP"/>
+    <foreign-key foreignTable="users" name="organization_members_ibfk_1" onDelete="CASCADE">
+      <reference local="user_id" foreign="id"/>
+    </foreign-key>
+    <foreign-key foreignTable="organizations" name="organization_members_ibfk_2" onDelete="CASCADE">
+      <reference local="organization_id" foreign="id"/>
+    </foreign-key>
+    <foreign-key foreignTable="users" name="organization_members_ibfk_3" onDelete="SET NULL">
+      <reference local="added_by" foreign="id"/>
+    </foreign-key>
+    <index name="organization_id">
+      <index-column name="organization_id"/>
+    </index>
+    <index name="added_by">
+      <index-column name="added_by"/>
+    </index>
+    <unique name="unique_member">
+      <unique-column name="user_id"/>
+      <unique-column name="organization_id"/>
+    </unique>
+    <vendor type="mysql">
+      <parameter name="Engine" value="InnoDB"/>
+    </vendor>
+  </table>
+  <table name="organizations" idMethod="native" phpName="Organizations" description="Юридические лица (организации)">
+    <column name="id" phpName="Id" type="INTEGER" sqlType="int unsigned" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="name" phpName="Name" type="VARCHAR" size="255" description="Название организации" required="true"/>
+    <column name="inn" phpName="Inn" type="VARCHAR" size="20" description="ИНН (может отсутствовать)"/>
+    <column name="contact_person" phpName="ContactPerson" type="VARCHAR" size="255" description="Контактное лицо (ФИО)"/>
+    <column name="contact_phone" phpName="ContactPhone" type="VARCHAR" size="20" description="Контактный телефон"/>
+    <column name="contact_email" phpName="ContactEmail" type="VARCHAR" size="255" description="Контактный email"/>
+    <column name="description" phpName="Description" type="LONGVARCHAR" description="Описание деятельности"/>
+    <column name="logo" phpName="Logo" type="VARCHAR" size="500" description="Логотип"/>
+    <column name="verified" phpName="Verified" type="BOOLEAN" size="1" description="Подтверждена модератором" defaultValue="false"/>
+    <column name="created_at" phpName="CreatedAt" type="TIMESTAMP" defaultExpr="CURRENT_TIMESTAMP"/>
+    <column name="updated_at" phpName="UpdatedAt" type="TIMESTAMP" defaultExpr="CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"/>
+    <index name="idx_name">
+      <index-column name="name"/>
+    </index>
+    <vendor type="mysql">
+      <parameter name="Engine" value="InnoDB"/>
+    </vendor>
+  </table>
+  <table name="participant_days" idMethod="native" phpName="ParticipantDays" description="Даты участия (для типа A)">
+    <column name="id" phpName="Id" type="INTEGER" sqlType="int unsigned" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="participant_id" phpName="ParticipantId" type="INTEGER" sqlType="int unsigned" required="true"/>
+    <column name="date" phpName="Date" type="DATE" required="true"/>
+    <foreign-key foreignTable="project_participants" name="participant_days_ibfk_1" onDelete="CASCADE">
+      <reference local="participant_id" foreign="id"/>
+    </foreign-key>
+    <unique name="unique_participant_day">
+      <unique-column name="participant_id"/>
+      <unique-column name="date"/>
+    </unique>
+    <vendor type="mysql">
+      <parameter name="Engine" value="InnoDB"/>
+    </vendor>
+  </table>
+  <table name="project_participants" idMethod="native" phpName="ProjectParticipants" description="Участники проектов и их роли">
+    <column name="id" phpName="Id" type="INTEGER" sqlType="int unsigned" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="user_id" phpName="UserId" type="INTEGER" sqlType="int unsigned" required="true"/>
+    <column name="project_id" phpName="ProjectId" type="INTEGER" sqlType="int unsigned" required="true"/>
+    <column name="role_id" phpName="RoleId" type="INTEGER" sqlType="int unsigned" required="true"/>
+    <column name="status" phpName="Status" type="CHAR" sqlType="enum('invited','active','rejected','left')" defaultValue="invited"/>
+    <column name="invited_by" phpName="InvitedBy" type="INTEGER" sqlType="int unsigned" description="Кто пригласил (админ/овнер)"/>
+    <column name="joined_at" phpName="JoinedAt" type="TIMESTAMP" description="Когда принял приглашение или был назначен"/>
+    <foreign-key foreignTable="users" name="project_participants_ibfk_1" onDelete="CASCADE">
+      <reference local="user_id" foreign="id"/>
+    </foreign-key>
+    <foreign-key foreignTable="projects" name="project_participants_ibfk_2" onDelete="CASCADE">
+      <reference local="project_id" foreign="id"/>
+    </foreign-key>
+    <foreign-key foreignTable="project_roles" name="project_participants_ibfk_3" onDelete="CASCADE">
+      <reference local="role_id" foreign="id"/>
+    </foreign-key>
+    <foreign-key foreignTable="users" name="project_participants_ibfk_4" onDelete="SET NULL">
+      <reference local="invited_by" foreign="id"/>
+    </foreign-key>
+    <index name="project_id">
+      <index-column name="project_id"/>
+    </index>
+    <index name="role_id">
+      <index-column name="role_id"/>
+    </index>
+    <index name="invited_by">
+      <index-column name="invited_by"/>
+    </index>
+    <unique name="unique_project_user_role">
+      <unique-column name="user_id"/>
+      <unique-column name="project_id"/>
+      <unique-column name="role_id"/>
+    </unique>
+    <vendor type="mysql">
+      <parameter name="Engine" value="InnoDB"/>
+    </vendor>
+  </table>
+  <table name="project_role_daily_needs" idMethod="native" phpName="ProjectRoleDailyNeeds" description="Ежедневная потребность в ролях (для типа A)">
+    <column name="id" phpName="Id" type="INTEGER" sqlType="int unsigned" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="role_id" phpName="RoleId" type="INTEGER" sqlType="int unsigned" required="true"/>
+    <column name="date" phpName="Date" type="DATE" required="true"/>
+    <column name="needed_count" phpName="NeededCount" type="INTEGER" sqlType="int unsigned" description="Сколько человек нужно на эту дату" required="true"/>
+    <foreign-key foreignTable="project_roles" name="project_role_daily_needs_ibfk_1" onDelete="CASCADE">
+      <reference local="role_id" foreign="id"/>
+    </foreign-key>
+    <unique name="unique_role_date">
+      <unique-column name="role_id"/>
+      <unique-column name="date"/>
+    </unique>
+    <vendor type="mysql">
+      <parameter name="Engine" value="InnoDB"/>
+    </vendor>
+  </table>
+  <table name="project_roles" idMethod="native" phpName="ProjectRoles" description="Роли, доступные в проекте">
+    <column name="id" phpName="Id" type="INTEGER" sqlType="int unsigned" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="project_id" phpName="ProjectId" type="INTEGER" sqlType="int unsigned" required="true"/>
+    <column name="name" phpName="Name" type="VARCHAR" size="100" required="true"/>
+    <column name="description" phpName="Description" type="LONGVARCHAR"/>
+    <column name="total_needed" phpName="TotalNeeded" type="INTEGER" sqlType="int unsigned" description="Для типа B: общее количество людей на эту роль"/>
+    <foreign-key foreignTable="projects" name="project_roles_ibfk_1" onDelete="CASCADE">
+      <reference local="project_id" foreign="id"/>
+    </foreign-key>
+    <index name="idx_project">
+      <index-column name="project_id"/>
+    </index>
+    <vendor type="mysql">
+      <parameter name="Engine" value="InnoDB"/>
+    </vendor>
+  </table>
+  <table name="project_task_volunteers" idMethod="native" phpName="ProjectTaskVolunteers" description="Волонтеры, выполняющие мелкие задачи проекта">
+    <column name="id" phpName="Id" type="INTEGER" sqlType="int unsigned" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="project_task_id" phpName="ProjectTaskId" type="INTEGER" sqlType="int unsigned" required="true"/>
+    <column name="user_id" phpName="UserId" type="INTEGER" sqlType="int unsigned" required="true"/>
+    <column name="status" phpName="Status" type="CHAR" sqlType="enum('assigned','completed')" defaultValue="assigned"/>
+    <column name="assigned_at" phpName="AssignedAt" type="TIMESTAMP" defaultExpr="CURRENT_TIMESTAMP"/>
+    <foreign-key foreignTable="project_tasks" name="project_task_volunteers_ibfk_1" onDelete="CASCADE">
+      <reference local="project_task_id" foreign="id"/>
+    </foreign-key>
+    <foreign-key foreignTable="users" name="project_task_volunteers_ibfk_2" onDelete="CASCADE">
+      <reference local="user_id" foreign="id"/>
+    </foreign-key>
+    <index name="user_id">
+      <index-column name="user_id"/>
+    </index>
+    <unique name="unique_task_volunteer">
+      <unique-column name="project_task_id"/>
+      <unique-column name="user_id"/>
+    </unique>
+    <vendor type="mysql">
+      <parameter name="Engine" value="InnoDB"/>
+    </vendor>
+  </table>
+  <table name="project_tasks" idMethod="native" phpName="ProjectTasks" description="Мелкие задачи внутри проекта">
+    <column name="id" phpName="Id" type="INTEGER" sqlType="int unsigned" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="project_id" phpName="ProjectId" type="INTEGER" sqlType="int unsigned" required="true"/>
+    <column name="title" phpName="Title" type="VARCHAR" size="255" required="true"/>
+    <column name="description" phpName="Description" type="LONGVARCHAR"/>
+    <column name="date" phpName="Date" type="DATE" description="Если привязана к конкретному дню"/>
+    <column name="status" phpName="Status" type="CHAR" sqlType="enum('pending','in_progress','completed')" defaultValue="pending"/>
+    <column name="created_at" phpName="CreatedAt" type="TIMESTAMP" defaultExpr="CURRENT_TIMESTAMP"/>
+    <column name="updated_at" phpName="UpdatedAt" type="TIMESTAMP" defaultExpr="CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"/>
+    <foreign-key foreignTable="projects" name="project_tasks_ibfk_1" onDelete="CASCADE">
+      <reference local="project_id" foreign="id"/>
+    </foreign-key>
+    <index name="idx_project">
+      <index-column name="project_id"/>
+    </index>
+    <vendor type="mysql">
+      <parameter name="Engine" value="InnoDB"/>
+    </vendor>
+  </table>
+  <table name="projects" idMethod="native" phpName="Projects">
+    <column name="id" phpName="Id" type="INTEGER" sqlType="int unsigned" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="title" phpName="Title" type="VARCHAR" size="255" required="true"/>
+    <column name="description" phpName="Description" type="LONGVARCHAR"/>
+    <column name="type" phpName="Type" type="CHAR" sqlType="enum('A','B')" description="A - с ролями по дням, B - без разделения по дням" required="true"/>
+    <column name="created_by_user_id" phpName="CreatedByUserId" type="INTEGER" sqlType="int unsigned" description="Создатель – пользователь"/>
+    <column name="created_by_organization_id" phpName="CreatedByOrganizationId" type="INTEGER" sqlType="int unsigned" description="Создатель – организация"/>
+    <column name="status" phpName="Status" type="CHAR" sqlType="enum('searching','active','completed','cancelled')" defaultValue="searching"/>
+    <column name="start_date" phpName="StartDate" type="DATE" description="Дата начала проекта"/>
+    <column name="end_date" phpName="EndDate" type="DATE" description="Дата окончания проекта"/>
+    <column name="created_at" phpName="CreatedAt" type="TIMESTAMP" defaultExpr="CURRENT_TIMESTAMP"/>
+    <column name="updated_at" phpName="UpdatedAt" type="TIMESTAMP" defaultExpr="CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"/>
+    <foreign-key foreignTable="users" name="projects_ibfk_1" onDelete="CASCADE">
+      <reference local="created_by_user_id" foreign="id"/>
+    </foreign-key>
+    <foreign-key foreignTable="organizations" name="projects_ibfk_2" onDelete="CASCADE">
+      <reference local="created_by_organization_id" foreign="id"/>
+    </foreign-key>
+    <index name="idx_status">
+      <index-column name="status"/>
+    </index>
+    <index name="idx_creator_user">
+      <index-column name="created_by_user_id"/>
+    </index>
+    <index name="idx_creator_org">
+      <index-column name="created_by_organization_id"/>
+    </index>
+    <vendor type="mysql">
+      <parameter name="Engine" value="InnoDB"/>
+    </vendor>
+  </table>
+  <table name="ratings" idMethod="native" phpName="Ratings">
+    <column name="id" phpName="Id" type="INTEGER" sqlType="int unsigned" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="rater_id" phpName="RaterId" type="INTEGER" sqlType="int unsigned" description="Кто оценивает (пользователь)" required="true"/>
+    <column name="rated_user_id" phpName="RatedUserId" type="INTEGER" sqlType="int unsigned" description="Кого оценивают (пользователь)" required="true"/>
+    <column name="rating" phpName="Rating" type="TINYINT" sqlType="tinyint unsigned" required="true"/>
+    <column name="comment" phpName="Comment" type="LONGVARCHAR"/>
+    <column name="task_id" phpName="TaskId" type="INTEGER" sqlType="int unsigned" description="Ссылка на простую задачу (если оценка за неё)"/>
+    <column name="project_id" phpName="ProjectId" type="INTEGER" sqlType="int unsigned" description="Ссылка на проект (если оценка за участие в проекте)"/>
+    <column name="created_at" phpName="CreatedAt" type="TIMESTAMP" defaultExpr="CURRENT_TIMESTAMP"/>
+    <foreign-key foreignTable="users" name="ratings_ibfk_1" onDelete="CASCADE">
+      <reference local="rater_id" foreign="id"/>
+    </foreign-key>
+    <foreign-key foreignTable="users" name="ratings_ibfk_2" onDelete="CASCADE">
+      <reference local="rated_user_id" foreign="id"/>
+    </foreign-key>
+    <foreign-key foreignTable="tasks" name="ratings_ibfk_3" onDelete="SET NULL">
+      <reference local="task_id" foreign="id"/>
+    </foreign-key>
+    <foreign-key foreignTable="projects" name="ratings_ibfk_4" onDelete="SET NULL">
+      <reference local="project_id" foreign="id"/>
+    </foreign-key>
+    <index name="task_id">
+      <index-column name="task_id"/>
+    </index>
+    <index name="project_id">
+      <index-column name="project_id"/>
+    </index>
+    <index name="idx_rater">
+      <index-column name="rater_id"/>
+    </index>
+    <index name="idx_rated">
+      <index-column name="rated_user_id"/>
+    </index>
+    <unique name="unique_task_rating">
+      <unique-column name="rater_id"/>
+      <unique-column name="rated_user_id"/>
+      <unique-column name="task_id"/>
+    </unique>
+    <unique name="unique_project_rating">
+      <unique-column name="rater_id"/>
+      <unique-column name="rated_user_id"/>
+      <unique-column name="project_id"/>
+    </unique>
+    <vendor type="mysql">
+      <parameter name="Engine" value="InnoDB"/>
+    </vendor>
+  </table>
+  <table name="task_volunteers" idMethod="native" phpName="TaskVolunteers" description="Волонтеры, выполняющие простые задачи">
+    <column name="id" phpName="Id" type="INTEGER" sqlType="int unsigned" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="task_id" phpName="TaskId" type="INTEGER" sqlType="int unsigned" required="true"/>
+    <column name="user_id" phpName="UserId" type="INTEGER" sqlType="int unsigned" required="true"/>
+    <column name="status" phpName="Status" type="CHAR" sqlType="enum('pending','accepted','rejected','cancelled','completed')" description="Статус участия" defaultValue="pending"/>
+    <column name="assigned_at" phpName="AssignedAt" type="TIMESTAMP" defaultExpr="CURRENT_TIMESTAMP"/>
+    <column name="updated_at" phpName="UpdatedAt" type="TIMESTAMP" defaultExpr="CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"/>
+    <foreign-key foreignTable="tasks" name="task_volunteers_ibfk_1" onDelete="CASCADE">
+      <reference local="task_id" foreign="id"/>
+    </foreign-key>
+    <foreign-key foreignTable="users" name="task_volunteers_ibfk_2" onDelete="CASCADE">
+      <reference local="user_id" foreign="id"/>
+    </foreign-key>
+    <index name="user_id">
+      <index-column name="user_id"/>
+    </index>
+    <unique name="unique_task_volunteer">
+      <unique-column name="task_id"/>
+      <unique-column name="user_id"/>
+    </unique>
+    <vendor type="mysql">
+      <parameter name="Engine" value="InnoDB"/>
+    </vendor>
+  </table>
+  <table name="tasks" idMethod="native" phpName="Tasks">
+    <column name="id" phpName="Id" type="INTEGER" sqlType="int unsigned" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="title" phpName="Title" type="VARCHAR" size="255" required="true"/>
+    <column name="description" phpName="Description" type="LONGVARCHAR"/>
+    <column name="needed_volunteers" phpName="NeededVolunteers" type="INTEGER" sqlType="int unsigned" description="Сколько волонтеров нужно" required="true" defaultValue="1"/>
+    <column name="priority" phpName="Priority" type="CHAR" sqlType="enum('low','medium','high')" defaultValue="medium"/>
+    <column name="location" phpName="Location" type="VARCHAR" size="255" description="Место выполнения"/>
+    <column name="reward" phpName="Reward" type="DECIMAL" size="10" scale="2" description="Награда в нирбиках" defaultValue="0.00"/>
+    <column name="status" phpName="Status" type="CHAR" sqlType="enum('searching','in_progress','completed','cancelled')" defaultValue="searching"/>
+    <column name="created_by_user_id" phpName="CreatedByUserId" type="INTEGER" sqlType="int unsigned" description="Создатель – пользователь (если задача от физлица)"/>
+    <column name="created_by_organization_id" phpName="CreatedByOrganizationId" type="INTEGER" sqlType="int unsigned" description="Создатель – организация (если задача от юрлица)"/>
+    <column name="deadline" phpName="Deadline" type="DATETIME" description="Срок выполнения"/>
+    <column name="created_at" phpName="CreatedAt" type="TIMESTAMP" defaultExpr="CURRENT_TIMESTAMP"/>
+    <column name="updated_at" phpName="UpdatedAt" type="TIMESTAMP" defaultExpr="CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"/>
+    <foreign-key foreignTable="users" name="tasks_ibfk_1" onDelete="CASCADE">
+      <reference local="created_by_user_id" foreign="id"/>
+    </foreign-key>
+    <foreign-key foreignTable="organizations" name="tasks_ibfk_2" onDelete="CASCADE">
+      <reference local="created_by_organization_id" foreign="id"/>
+    </foreign-key>
+    <index name="idx_status">
+      <index-column name="status"/>
+    </index>
+    <index name="idx_creator_user">
+      <index-column name="created_by_user_id"/>
+    </index>
+    <index name="idx_creator_org">
+      <index-column name="created_by_organization_id"/>
+    </index>
+    <vendor type="mysql">
+      <parameter name="Engine" value="InnoDB"/>
+    </vendor>
+  </table>
+  <table name="users" idMethod="native" phpName="Users" description="Физические лица (пользователи)">
+    <column name="id" phpName="Id" type="INTEGER" sqlType="int unsigned" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="full_name" phpName="FullName" type="VARCHAR" size="255" description="ФИО" required="true"/>
+    <column name="city" phpName="City" type="VARCHAR" size="100" description="Город"/>
+    <column name="birth_date" phpName="BirthDate" type="DATE" description="Год рождения"/>
+    <column name="about" phpName="About" type="LONGVARCHAR" description="Краткая информация о себе"/>
+    <column name="profile_picture" phpName="ProfilePicture" type="VARCHAR" size="500" description="Ссылка на фото профиля"/>
+    <column name="email" phpName="Email" type="VARCHAR" size="255" description="Email для входа"/>
+    <column name="phone" phpName="Phone" type="VARCHAR" size="20" description="Телефон"/>
+    <column name="password" phpName="Password" type="LONGVARCHAR" description="Хеш пароля"/>
+    <column name="vk_id" phpName="VkId" type="VARCHAR" size="100" description="ID ВКонтакте"/>
+    <column name="tg_id" phpName="TgId" type="VARCHAR" size="100" description="ID Telegram"/>
+    <column name="balance" phpName="Balance" type="DECIMAL" size="10" scale="2" description="Текущий баланс нирбиков" defaultValue="0.00"/>
+    <column name="availability_status" phpName="AvailabilityStatus" type="CHAR" sqlType="enum('available','busy','offline')" description="Статус доступности" defaultValue="available"/>
+    <column name="is_admin" phpName="IsAdmin" type="BOOLEAN" size="1" defaultValue="false"/>
+    <column name="is_moderator" phpName="IsModerator" type="BOOLEAN" size="1" defaultValue="false"/>
+    <column name="lastSeenAt" phpName="Lastseenat" type="TIMESTAMP" description="Последнее посещение"/>
+    <column name="is_online" phpName="IsOnline" type="BOOLEAN" size="1" description="Флаг онлайн" defaultValue="false"/>
+    <column name="average_rating" phpName="AverageRating" type="DECIMAL" size="3" scale="2" description="Средний рейтинг (на основе оценок)" defaultValue="0.00"/>
+    <column name="created_at" phpName="CreatedAt" type="TIMESTAMP" defaultExpr="CURRENT_TIMESTAMP"/>
+    <column name="updated_at" phpName="UpdatedAt" type="TIMESTAMP" defaultExpr="CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"/>
+    <column name="education_institution" phpName="EducationInstitution" type="VARCHAR" size="255" description="Учебное заведение"/>
+    <column name="education_degree" phpName="EducationDegree" type="VARCHAR" size="255" description="Степень/квалификация"/>
+    <column name="education_field" phpName="EducationField" type="VARCHAR" size="255" description="Специальность"/>
+    <column name="education_start_year" phpName="EducationStartYear" type="INTEGER"/>
+    <column name="education_end_year" phpName="EducationEndYear" type="INTEGER"/>
+    <index name="idx_email">
+      <index-column name="email"/>
+    </index>
+    <index name="idx_vk">
+      <index-column name="vk_id"/>
+    </index>
+    <index name="idx_tg">
+      <index-column name="tg_id"/>
+    </index>
+    <unique name="email">
+      <unique-column name="email"/>
+    </unique>
+    <vendor type="mysql">
+      <parameter name="Engine" value="InnoDB"/>
+    </vendor>
+  </table>
+</database>

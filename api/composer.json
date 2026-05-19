@@ -1,0 +1,40 @@
+{
+  "name": "tychcl/test_only",
+  "description": "Тестовое задание Only",
+  "type": "project",
+  "autoload": {
+      "psr-4": {
+        "Classes\\":"src/classes/",
+        "Models\\":"src/classes/Models/",
+        "Api\\":"src/controllers/api/",
+        "Web\\":"src/controllers/web/",
+        "Core\\":"src/core/",
+        "Middleware\\":"src/core/middlewares/"
+    }
+  },
+  "require": {
+    "vlucas/phpdotenv": "^5.6",
+    "propel/propel": "*",
+    "firebase/php-jwt": "^6.11",
+    "zircote/swagger-php": "*"
+  },
+  "minimum-stability": "beta",
+  "prefer-stable": true,
+  "scripts": {
+    "post-update-cmd": [
+        "@propel:reverse",
+        "@propel:build"
+    ],
+    "schema-update": [
+        "@propel:reverse",
+        "@propel:build"
+    ],
+    "propel:reverse": "vendor/bin/propel database:reverse --config-dir=configs/propel --output-dir=propel/schema --namespace=Models",
+    "propel:build": "vendor/bin/propel model:build --config-dir=configs/propel",
+    "propel:diff": "vendor/bin/propel diff --config-dir=configs/propel",
+    "propel:migrate": "vendor/bin/propel migrate --config-dir=configs/propel",
+    "propel:sql-build": "vendor/bin/propel sql:build --config-dir=configs/propel",
+    "propel:sql-insert": "vendor/bin/propel sql:insert --config-dir=configs/propel",
+    "propel:status": "vendor/bin/propel migration:status --config-dir=configs/propel"
+  }
+}

@@ -1,0 +1,25 @@
+propel:
+  database:
+    connections:
+      default:
+        adapter: mysql
+        dsn: mysql:host=db;port=3306;dbname=NearbyDB
+        user: root
+        password: strong_password_123
+        settings:
+          charset: utf8
+  runtime:
+    defaultConnection: default
+    connections:
+      - default
+  generator:
+    defaultConnection: default
+    connections:
+      - default
+  paths:
+    schemaDir: propel/schema
+    outputDir: propel/generated/classes
+    phpDir: src/classes
+    migrationDir: propel/migrations
+    sqlDir: propel/generated/sql
+    phpConfDir: propel/generated
