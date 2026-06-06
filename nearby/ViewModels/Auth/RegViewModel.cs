@@ -14,9 +14,18 @@ namespace nearby.ViewModels
 
         [ObservableProperty]
         [NotifyDataErrorInfo]
-        [Required(ErrorMessage = "ФИО не может быть пустым")]
-        [ValidateWithValidator(validatorName: nameof(Validate.FIOValidator), ErrorMessage = "Неверный формат ФИО")]
-        private string _fullName;
+        [Required(ErrorMessage = "Фамилия не может быть пустой")]
+        private string _sName;
+
+        [ObservableProperty]
+        [NotifyDataErrorInfo]
+        [Required(ErrorMessage = "Имя не может быть пустым")]
+        private string _fName;
+
+        [ObservableProperty]
+        [NotifyDataErrorInfo]
+        [Required(ErrorMessage = "Отчество не может быть пустым")]
+        private string _lName;
 
         [ObservableProperty]
         [NotifyDataErrorInfo]
@@ -72,7 +81,7 @@ namespace nearby.ViewModels
             }
             try
             {
-                var success = await _authService.RegisterAsync(FullName, Phone, Email, Password);
+                var success = await _authService.RegisterAsync(FName, SName, LName, Phone, Email, Password);
                 await ShowMsgAsync("Успех", "Регистрация прошла успешно. Теперь войдите.", "OK");
                 await Application.Current.MainPage.Navigation.PopAsync();
             }

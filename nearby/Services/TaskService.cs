@@ -10,19 +10,22 @@ namespace nearby.Services;
 
 public partial class TaskService : ObservableObject, ITaskService
 {
+    // Событие обновления задачи (например, после изменения статуса)
     public event EventHandler<TaskItem> TaskUpdated;
+    //Метод вызова уведомления о том что задача изменилась
     private void OnTaskUpdated(TaskItem task)
     {
         TaskUpdated?.Invoke(this, task);
     }
+
     private readonly ApiClient _apiClient;
 
     public TaskService(ApiClient apiClient)
     {
         _apiClient = apiClient;
     }
-
-    public async Task<ApiResponse<List<TaskItem>>> GetUserTasksAsync(int userId, string status, int page = 1, int pageSize = 10)
+    //Получения всех задач пользователя
+    public async Task<ApiResponse<List<TaskItem>>> GetUserTasksAsync(Guid userId, string status, int page = 1, int pageSize = 10)
     {
         var response = await _apiClient.GetAsync($"tasks/user/{userId}?status={status}&page={page}&limit={pageSize}");
         if(response is null)
@@ -37,7 +40,7 @@ public partial class TaskService : ObservableObject, ITaskService
         ApiResponse<List<TaskItem>> r = JsonConvert.DeserializeObject<ApiResponse<List<TaskItem>>>(json) ?? new();
         return r;
     }
-
+    //получения задач по фильтрам с пагинацией
     public async Task<ApiResponse<List<TaskItem>>> GetTasksAsync(int page = 1, int limit = 10, string status = null, string priority = null, string city = null)
     {
         var settings = new JsonSerializerSettings
@@ -65,7 +68,7 @@ public partial class TaskService : ObservableObject, ITaskService
         var result = JsonConvert.DeserializeObject<ApiResponse<List<TaskItem>>>(json, settings);
         return result;
     }
-
+    //получить информацию о конкретной задаче
     public async Task<ApiResponse<TaskItem>> GetTaskAsync(int id)
     {
         var response = await _apiClient.GetAsync($"tasks/{id}");
@@ -81,7 +84,7 @@ public partial class TaskService : ObservableObject, ITaskService
         var r = JsonConvert.DeserializeObject<TaskItem>(json);
         return new ApiResponse<TaskItem>("", r);
     }
-
+    //создать задачу
     public async Task<ApiResponse<TaskItem>> CreateTaskAsync(TaskItem task)
     {
         var data = new
@@ -108,7 +111,7 @@ public partial class TaskService : ObservableObject, ITaskService
         }
         return new ApiResponse<TaskItem>(json, null);
     }
-
+    //обновить задачу
     public async Task<ApiResponse<TaskItem>> UpdateTaskAsync(int id, TaskItem task)
     {
         var data = new
@@ -136,7 +139,7 @@ public partial class TaskService : ObservableObject, ITaskService
         OnTaskUpdated(task);
         return new ApiResponse<TaskItem>(json, null);
     }
-
+    //удалить задачу
     public async Task<ApiResponse<TaskItem>> DeleteTaskAsync(int id)
     {
         var response = await _apiClient.DeleteAsync($"tasks/{id}");
@@ -151,7 +154,7 @@ public partial class TaskService : ObservableObject, ITaskService
         }
         return new ApiResponse<TaskItem>(json, null);
     }
-
+    //откликнуться на задачу
     public async Task<ApiResponse<TaskItem>> VolunteerForTaskAsync(int taskId)
     {
         var response = await _apiClient.PostAsync($"tasks/{taskId}/volunteer", null);
@@ -166,7 +169,7 @@ public partial class TaskService : ObservableObject, ITaskService
         }
         return new ApiResponse<TaskItem>(json, null);
     }
-
+    //получить список откликнувшихся на задачу
     public async Task<ApiResponse<List<TaskVolunteerInfo>>> GetTaskVolunteersAsync(int taskId)
     {
         var response = await _apiClient.GetAsync($"tasks/{taskId}/volunteers");
@@ -181,8 +184,8 @@ public partial class TaskService : ObservableObject, ITaskService
         }
         return new ApiResponse<List<TaskVolunteerInfo>>("", JsonConvert.DeserializeObject<List<TaskVolunteerInfo>>(json));
     }
-
-    public async Task<ApiResponse<TaskItem>> AcceptVolunteerAsync(int taskId, int volunteerUserId)
+    //принять отклик
+    public async Task<ApiResponse<TaskItem>> AcceptVolunteerAsync(int taskId, Guid volunteerUserId)
     {
         var response = await _apiClient.PutAsync($"tasks/{taskId}/volunteers/{volunteerUserId}/accept", null);
         if (response is null)
@@ -196,8 +199,8 @@ public partial class TaskService : ObservableObject, ITaskService
         }
         return new ApiResponse<TaskItem>(json, null);
     }
-
-    public async Task<ApiResponse<TaskItem>> RejectVolunteerAsync(int taskId, int volunteerUserId)
+    //отклонить отклик
+    public async Task<ApiResponse<TaskItem>> RejectVolunteerAsync(int taskId, Guid volunteerUserId)
     {
         var response = await _apiClient.PutAsync($"tasks/{taskId}/volunteers/{volunteerUserId}/reject", null);
         if (response is null)
@@ -211,7 +214,7 @@ public partial class TaskService : ObservableObject, ITaskService
         }
         return new ApiResponse<TaskItem>(json, null);
     }
-
+    //начать выполнение задачи
     public async Task<ApiResponse<TaskItem>> StartTaskAsync(int taskId)
     {
         var response = await _apiClient.PutAsync($"tasks/{taskId}/start", null);
@@ -226,7 +229,7 @@ public partial class TaskService : ObservableObject, ITaskService
         }
         return new ApiResponse<TaskItem>(json, null);
     }
-
+    //завершить выполнение задачи
     public async Task<ApiResponse<TaskItem>> CompleteTaskAsync(int taskId)
     {
         var response = await _apiClient.PutAsync($"tasks/{taskId}/complete", null);
@@ -241,7 +244,7 @@ public partial class TaskService : ObservableObject, ITaskService
         }
         return new ApiResponse<TaskItem>(json, null);
     }
-
+    //получение статуса отклика волонтера на задачу
     public async Task<ApiResponse<string>> GetMyVolunteerStatusAsync(int taskId)
     {
         var response = await _apiClient.GetAsync($"tasks/{taskId}/my-status");

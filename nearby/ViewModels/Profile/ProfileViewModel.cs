@@ -27,14 +27,15 @@ namespace nearby.ViewModels
         private readonly ITaskService _taskService;
         private readonly IChatService _chatService;
         private readonly IServiceProvider _serviceProvider;
+        private readonly ITokenService _tokenService;
 
         private const int TaskPageSize = 10;
         private int _currentTaskPage = 1;
         private bool _hasMoreTasks = true;
 
         [ObservableProperty]
-        private int _userId = -99;
-        async partial void OnUserIdChanged(int value)
+        private Guid? _userId = null;
+        async partial void OnUserIdChanged(Guid? value)
         {
             await LoadData();
         }
@@ -68,13 +69,15 @@ namespace nearby.ViewModels
             IAuthService authService,
             ITaskService taskService,
             IServiceProvider serviceProvider,
-            IChatService chatService)
+            IChatService chatService,
+            ITokenService tokenService)
         {
             _userService = userService;
             _authService = authService;
             _taskService = taskService;
             _serviceProvider = serviceProvider;
             _chatService = chatService;
+            _tokenService = tokenService;
 
             SelectCategoryCommand = new Command<TaskCategory>(category => SelectedCategory = category);
             _userService.PropertyChanged += OnUserServicePropertyChanged;
@@ -114,7 +117,7 @@ namespace nearby.ViewModels
         {
             bool confirm = await Application.Current!.MainPage!.DisplayAlert("Подтверждение", "Вы действительно хотите выйти?", "Да", "Нет");
             if (!confirm) return;
-            await _authService.LogoutAsync();
+            await _authService.LogoutAsync(await _tokenService.GetTokenAsync(TokenService.TokenKey.Refresh));
             _userService.PropertyChanged -= OnUserServicePropertyChanged;
             _userService.CurrentUser = null;
             Application.Current.MainPage = _serviceProvider.GetRequiredService<AuthShell>();
@@ -157,7 +160,7 @@ namespace nearby.ViewModels
                     _ => ""
                 };
 
-                var response = await _taskService.GetUserTasksAsync(_user.Id, status, _currentTaskPage, TaskPageSize);
+                var response = await _taskService.GetUserTasksAsync((Guid)_userId, status, _currentTaskPage, TaskPageSize);
                 if (response?.Data == null) return;
 
                 var tasks = response.Data;
@@ -187,7 +190,7 @@ namespace nearby.ViewModels
         {
             try
             {
-                IsOwnProfile = _userId == -1 || (_userService.CurrentUser != null && _userService.CurrentUser.Id == _userId);
+                IsOwnProfile = _userId == _userService.CurrentUserId || (_userService.CurrentUser != null && _userService.CurrentUser.Id == _userId);
 
                 if (IsOwnProfile)
                 {
@@ -196,7 +199,7 @@ namespace nearby.ViewModels
                 }
                 else
                 {
-                    var response = await _userService.LoadUserByIdAsync((int)_userId);
+                    var response = await _userService.LoadUserByIdAsync(_userId);
                     User = response.Data;
                 }
             }

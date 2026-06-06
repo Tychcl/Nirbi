@@ -32,13 +32,16 @@ public partial class LoginViewModel : BaseViewModel
         ValidateAllProperties();
         ErrorsChanged += OnErrorsChanged;
     }
+    
     protected override void OnErrorsChanged(object? sender, DataErrorsChangedEventArgs e)
     {
         base.OnErrorsChanged(sender, e);
         LoginCommand.NotifyCanExecuteChanged();
     }
+    
     private bool CanLogin() => !HasErrors;
     [RelayCommand(CanExecute = nameof(CanLogin))]
+
     private async Task LoginAsync()
     {
         ValidateAllProperties();
@@ -50,7 +53,7 @@ public partial class LoginViewModel : BaseViewModel
         try
         {
             var success = await _authService.LoginAsync(Login, Password);
-            _userService.CurrentUser = success.Data;
+            _userService.CurrentUserId = success.UserId;
             Application.Current.MainPage = _serviceProvider.GetRequiredService<MainShell>();
         }
         catch (Exception e)

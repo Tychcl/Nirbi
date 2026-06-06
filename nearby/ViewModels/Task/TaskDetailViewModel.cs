@@ -130,7 +130,7 @@ namespace nearby.ViewModels
             IsBusy = true;
             try
             {
-                IsOwner = _userService.CurrentUser?.Id == Task.CreatorId;
+                IsOwner = _userService.CurrentUserId == Task.CreatorId;
                 if (IsOwner)
                 {
                     CanVolunteer = false;
@@ -232,7 +232,7 @@ namespace nearby.ViewModels
         private bool CanVolunteerExecute() => CanVolunteer && !IsBusy;
 
         [RelayCommand(CanExecute = nameof(CanAcceptRejectExecute))]
-        private async Task AcceptVolunteerAsync(int volunteerId)
+        private async Task AcceptVolunteerAsync(Guid volunteerId)
         {
             try
             {
@@ -246,7 +246,7 @@ namespace nearby.ViewModels
         }
 
         [RelayCommand(CanExecute = nameof(CanAcceptRejectExecute))]
-        private async Task RejectVolunteerAsync(int volunteerId)
+        private async Task RejectVolunteerAsync(Guid volunteerId)
         {
             try
             {

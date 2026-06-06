@@ -5,14 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using nearby.Classes;
 using nearby.Models;
+using nearby.Models.Api;
 
 namespace nearby.Interfaces
 {
     public interface IAuthService
     {
-        Task<ApiResponse<User>> LoginAsync(string login, string password);
-        Task<ApiResponse<bool?>> RegisterAsync(string fullName, string phone, string email, string password);
-        Task LogoutAsync();
-        Task<string?> GetTokenAsync();
+        Task<AuthResponse?> LoginAsync(string login, string password);
+        Task<AuthResponse?> RegisterAsync(string fName, string sName, string lName, string phone, string email, string password);
+        Task<bool?> LogoutAsync(string? refreshToken);
     }
 }

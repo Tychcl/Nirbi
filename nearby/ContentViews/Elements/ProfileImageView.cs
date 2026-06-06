@@ -63,27 +63,31 @@ public class ProfileImageView : ContentView
         }
     }
 
+
     private Image avatar;
     private Border border;
     public ProfileImageView()
 	{
+        //Создание элемента изображения
         avatar = new Image
         {
             Aspect = Aspect.AspectFill
         };
+        //Подстановка изображения в эелемент
         Updateimage();
-
+        //Создание элемента обводки
         border = new Border
         {
             StrokeThickness = 2,
             Margin = new Thickness(0),
             Content = avatar
         };
+        //установка динамического ресурса - цвет обводки
         border.SetDynamicResource(Border.StrokeProperty, "CBorder");
         UpdateSize();
-
+        //Предаем обводку
         Content = border;
-
+        //Привязка значений ширины и высоты обводки
         border.SetBinding(WidthRequestProperty, new Binding(nameof(ImageSize), source: this));
         border.SetBinding(HeightRequestProperty, new Binding(nameof(ImageSize), source: this));
     }

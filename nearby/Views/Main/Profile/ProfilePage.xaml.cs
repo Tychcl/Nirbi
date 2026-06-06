@@ -1,24 +1,26 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
+using nearby.Services;
 using nearby.ViewModels;
 
 namespace nearby.Views.Main;
 
 public partial class ProfilePage : ContentPage
 {
-
-    public ProfilePage(ProfileViewModel viewModel)
+    private IUserService _userService;
+    public ProfilePage(ProfileViewModel viewModel, IUserService us)
     {
         BindingContext = viewModel;
+        _userService = us;
         InitializeComponent();
     }
 
     protected override void OnAppearing()
     {
         base.OnAppearing();
-        if(BindingContext is ProfileViewModel vm && vm.UserId == -99)
+        if(BindingContext is ProfileViewModel vm && vm.UserId == null)
         {
-            vm.UserId = -1;
+            vm.UserId = _userService.CurrentUserId;
         }
     }
 

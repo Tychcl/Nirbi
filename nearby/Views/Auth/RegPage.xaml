@@ -10,6 +10,8 @@
             <VerticalStackLayout Spacing="15" >
                 <Label Text="Регистрация" FontSize="24" HorizontalOptions="Center" Style="{StaticResource SectionTitle}" Margin="0"/>
                 <Entry Placeholder="ФИО" Text="{Binding FullName}" Style="{StaticResource EditEntry}" Margin="0"/>
+                <Entry Placeholder="ФИО" Text="{Binding FullName}" Style="{StaticResource EditEntry}" Margin="0"/>
+                <Entry Placeholder="ФИО" Text="{Binding FullName}" Style="{StaticResource EditEntry}" Margin="0"/>
                 <Entry Placeholder="Телефон" Text="{Binding Phone}" Keyboard="Telephone" Style="{StaticResource EditEntry}" Margin="0"/>
                 <Entry Placeholder="Email" Text="{Binding Email}" Keyboard="Email" Style="{StaticResource EditEntry}" Margin="0"/>
                 <CVE:Password Text="{Binding Password}" Placeholder="Введите пароль" />

@@ -17,6 +17,8 @@ public partial class UserService : ObservableObject, IUserService
 
     [ObservableProperty]
     private User? _currentUser;
+    [ObservableProperty]
+    private Guid? _currentUserId;
 
     public UserService(ApiClient apiClient, ITokenService tokenService)
     {
@@ -24,29 +26,29 @@ public partial class UserService : ObservableObject, IUserService
         _tokenService = tokenService;
     }
 
-    public async Task<ApiResponse<User>> LoadUserByIdAsync(int id = -1)
+    public async Task<ApiResponse<User>> LoadUserByIdAsync(Guid? id = null)
     {
-        var token = await _tokenService.GetTokenAsync();
+        var token = await _tokenService.GetTokenAsync(TokenService.TokenKey.Refresh);
         if (string.IsNullOrEmpty(token))
         {
             CurrentUser = null;
             throw new Exception("Неавторизован");
         }
+        id = id ?? _currentUserId;
         var response = await _apiClient.GetAsync($"users/{id}");
         if (response is null)
-        {
             throw new Exception("Неудается подключиться к серверу");
-        }
+
         var json = await response.Content.ReadAsStringAsync();
         if (!response.IsSuccessStatusCode)
-        {
             throw new Exception(json);
-        }
         var user = JsonConvert.DeserializeObject<User>(json);
-        if (id == -1 || CurrentUser?.Id == id)
+
+        if (id == _currentUserId || CurrentUser?.Id == id)
         {
             CurrentUser = user;
         }
+
         return new ApiResponse<User>("Данные получены", user);
     }
 
@@ -54,18 +56,17 @@ public partial class UserService : ObservableObject, IUserService
     {
         var json = JsonConvert.SerializeObject(updatedData);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
+
         var response = await _apiClient.PutAsync($"users/{id}", content);
         if (response is null)
-        {
             throw new Exception("Неудается подключиться к серверу");
-        }
+
         json = await response.Content.ReadAsStringAsync();
         if (!response.IsSuccessStatusCode)
-        {
             throw new Exception(json);
-        }
+
         var user = await LoadUserByIdAsync(_currentUser.Id);
-        //this.OnPropertyChanged(nameof(IUserService.CurrentUser));
+
         return new ApiResponse<User>("Данные обновленны", user.Data);
     }
 

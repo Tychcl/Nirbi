@@ -59,7 +59,7 @@ namespace nearby.ViewModels
 
 
         [ObservableProperty]
-        private int _curentUserId;
+        private Guid _curentUserId;
 
         [ObservableProperty]
         private int _chatId;
@@ -81,13 +81,13 @@ namespace nearby.ViewModels
         [ObservableProperty]
         private Message? _selectedMessage;
 
-        public int CurrentUserId => _userService.CurrentUser?.Id ?? 0;
+        public Guid CurrentUserId => (Guid)_userService.CurrentUserId;
 
         public ChatDetailViewModel(IChatService chatService, IUserService userService)
         {
             _chatService = chatService;
             _userService = userService;
-            CurentUserId = _userService.CurrentUser.Id;
+            CurentUserId = (Guid)_userService.CurrentUserId;
 
             MessageNotOwnerPopupItems.Add(new((string)ResourceManager.Get("Reply"), "Ответить", ReplyMessageCommand));
             MessageNotOwnerPopupItems.Add(new((string)ResourceManager.Get("Copy"), "Копировать", CopyMessageCommand));
@@ -284,17 +284,7 @@ namespace nearby.ViewModels
         [RelayCommand]
         private async Task AddMember()
         {
-            try
-            {
-                var idString = await Application.Current!.MainPage!.DisplayPromptAsync("Добавить участника", "Введите ID пользователя:");
-                if (!int.TryParse(idString, out int userId)) return;
-                var result = await _chatService.AddMemberAsync(ChatId, userId);
-                await LoadChatDetailAsync();
-            }
-            catch (Exception ex)
-            {
-                await ShowErrorAsync(ex.Message);
-            }
+           
         }
 
         [RelayCommand(CanExecute = nameof(CanModifyMember))]

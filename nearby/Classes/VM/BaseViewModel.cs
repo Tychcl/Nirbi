@@ -22,15 +22,18 @@ namespace nearby
 
         protected BaseViewModel()
         {
+            // Подписываемся на событие изменения ошибок валидации
             ErrorsChanged += OnErrorsChanged;
         }
-
         protected virtual void OnErrorsChanged(object? sender, DataErrorsChangedEventArgs e)
         {
+            // Собираем все уникальные сообщения об ошибках
             var allErrors = GetErrors()
                 .SelectMany(err => err.ErrorMessage != null ? new[] { err.ErrorMessage } : Array.Empty<string>())
                 .Distinct();
+            // Объединяем ошибки в одну строку и обновляем свойство ErrorMessage
             ErrorMessage = string.Join(Environment.NewLine, allErrors);
+            // Уведомляем интерфейс об изменении состояния HasErrors
             OnPropertyChanged(nameof(HasErrors));
         }
 

@@ -6,4 +6,7 @@
 	<domain-config cleartextTrafficPermitted="true">
 		<domain>192.168.0.15</domain>
 	</domain-config>
+	<domain-config cleartextTrafficPermitted="true">
+		<domain includeSubdomains="true">5.129.220.192</domain>
+	</domain-config>
 </network-security-config>

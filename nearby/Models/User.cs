@@ -5,51 +5,43 @@ using System.Text;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using nearby.Classes;
+using Newtonsoft.Json;
 
 namespace nearby.Models
 {
     public class User: Clone<User>
     {
-        public int Id { get; set; }
+        [JsonProperty("id")]
+        public Guid Id { get; set; }
+        [JsonProperty("secondName")]
         public string Surname { get; set; }
+        [JsonProperty("firstName")]
         public string Name { get; set; }
+        [JsonProperty("lastName")]
         public string Patronymic { get; set; }
-        private string _fullname { get; set; }
-        public string FullName 
-        { 
-            get => _fullname;
-            set
-            {
-                _fullname = value;
-                string[]? fio = value?.Split(' ');
-                if (fio != null)
-                {
-                    Surname = fio.Length > 0 ? fio[0] : "";
-                    Name = fio.Length > 1 ? fio[1] : "";
-                    Patronymic = fio.Length > 2 ? fio[2] : "";
-                }
-            }
-        }
+        [JsonProperty("phone")]
         public string? Phone { get; set; }
+        [JsonProperty("email")]
         public string? Email { get; set; }
+        [JsonProperty("city")]
         public string? City { get; set; }
+        [JsonProperty("birthDate")]
         public DateTime? BirthDate { get; set; }
+        [JsonProperty("about")]
         public string? About { get; set; }
-        public string? ProfilePicture { get; set; }
-        public decimal Balance { get; set; }
-        public string AvailabilityStatus { get; set; } = "available";
-        public bool IsAdmin { get; set; }
-        public bool IsModerator { get; set; }
-        public DateTime? LastSeenAt { get; set; }
-        public bool IsOnline { get; set; }
-        public double AverageRating { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
-
+        [JsonProperty("educationPlace")]
         public string? EducationInstitution { get; set; }
         public string? EducationDegree { get; set; }
+        [JsonProperty("educationField")]
         public string? EducationField { get; set; }
+        [JsonProperty("educationStartYear")]
         public int? EducationStartYear { get; set; }
+        [JsonProperty("educationEndYear")]
         public int? EducationEndYear { get; set; }
+
+        public string FullName
+        {
+            get => $"{Surname} {Name} {Patronymic}";
+        }
     }
 }

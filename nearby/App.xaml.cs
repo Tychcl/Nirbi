@@ -13,13 +13,17 @@ namespace nearby
         private readonly ITokenService _tokenService;
         private readonly IUserService _userService;
         private readonly IServiceProvider _serviceProvider;
+        private readonly IAuthService _authService;
+        private readonly ApiClient _apiClient;
 
-        public App(ITokenService tokenService, IUserService userService, IServiceProvider serviceProvider)
+        public App(ITokenService tokenService, IUserService userService, IServiceProvider serviceProvider, IAuthService authService, ApiClient apiClient)
         {
             InitializeComponent();
             _tokenService = tokenService;
             _userService = userService;
             _serviceProvider = serviceProvider;
+            _authService = authService;
+            _apiClient = apiClient;
             ThemeManager.LoadSavedTheme();
             MainPage = _serviceProvider.GetRequiredService<LoadingPage>();
         }
@@ -31,9 +35,16 @@ namespace nearby
             {
                 await ResourceManager.Load<int>("PrimaryFontSize");
                 await ResourceManager.Load<int>("SecondaryFontSize");
-                var token = await _tokenService.GetTokenAsync();
-                if(string.IsNullOrEmpty(token)) MainPage = _serviceProvider.GetRequiredService<AuthShell>();
-                await _userService.LoadUserByIdAsync();
+                var token = await _tokenService.GetTokenAsync(TokenService.TokenKey.Refresh);
+                if(string.IsNullOrEmpty(token))
+                {
+                    MainPage = _serviceProvider.GetRequiredService<AuthShell>();
+                    return;
+                }
+                var auth = await _apiClient.RefreshAsync(token);
+                _userService.CurrentUserId = auth.UserId;
+                await _tokenService.SetTokenAsync(TokenService.TokenKey.Access, auth.AccessToken);
+                await _tokenService.SetTokenAsync(TokenService.TokenKey.Refresh, auth.RefreshToken);
                 if (_userService.CurrentUser is not null)
                 {
                     MainPage = _serviceProvider.GetRequiredService<MainShell>();

@@ -42,13 +42,16 @@ namespace nearby.Classes
 
         public static async Task Show(PopupMenu popup, double x, double y, INavigation? nav = null)
         {
+            //Минимальные отступы слева и сверху
             double minLeft = 50;
             double minTop = 75;
+            //Вычисление финальной возможной позиции
             double finalLeft = Math.Min(MaxDIU.X - 200, x);
             double finalTop = Math.Min(MaxDIU.Y - 300, y);
             popup.Margin = new Thickness(
                 Math.Max(minLeft, finalLeft) / 2, 
                 Math.Max(minTop, finalTop) / 2, 0, 0);
+            //отображение контекстного меню
             await Show(popup, nav);
         }
     }
