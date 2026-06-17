@@ -19,7 +19,7 @@ namespace nearby.ViewModels
 {
     public enum TaskCategory { Created, InProgress, Completed }
 
-    [QueryProperty(nameof(UserId), "id")] //-1 - current user
+    [QueryProperty(nameof(Id), "id")] //-1 - current user
     public partial class ProfileViewModel : BaseViewModel, IDisposable
     {
         private readonly IUserService _userService;
@@ -32,6 +32,16 @@ namespace nearby.ViewModels
         private const int TaskPageSize = 10;
         private int _currentTaskPage = 1;
         private bool _hasMoreTasks = true;
+
+        [ObservableProperty]
+        private string? _id;
+        partial void OnIdChanged(string? value)
+        {
+            if (!string.IsNullOrEmpty(Id))
+            {
+                UserId = Guid.Parse(Id);
+            }
+        }
 
         [ObservableProperty]
         private Guid? _userId;

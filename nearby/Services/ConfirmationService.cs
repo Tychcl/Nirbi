@@ -1,8 +1,9 @@
-﻿using System.Text;
-using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using System.Text;
 using nearby.Classes;
 using nearby.Interfaces;
 using nearby.Models;
+using Newtonsoft.Json;
 
 namespace nearby.Services
 {
@@ -43,7 +44,20 @@ namespace nearby.Services
             if (response == null) throw new HttpRequestException("Ошибка подключения к серверу");
             var json = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode) throw new HttpRequestException(json);
-            return JsonConvert.DeserializeObject<List<Confirmation>>(json) ?? new List<Confirmation>();
+            var r = JsonConvert.DeserializeObject<List<Confirmation>>(json) ?? new List<Confirmation>();
+            foreach (var conf in r)
+            {
+                if (!string.IsNullOrWhiteSpace(conf.MetaData))
+                {
+                    try
+                    {
+                        var meta = JsonConvert.DeserializeObject<Dictionary<string, string>>(conf.MetaData);
+                        conf.TaskName = meta?.ContainsKey("taskName") == true ? meta["taskName"] : null;
+                    }
+                    catch { conf.TaskName = null; }
+                }
+            }
+            return r;
         }
 
         public async Task<List<Confirmation>> GetConfirmationsByInitiatorAsync()
@@ -52,7 +66,20 @@ namespace nearby.Services
             if (response == null) throw new HttpRequestException("Ошибка подключения к серверу");
             var json = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode) throw new HttpRequestException(json);
-            return JsonConvert.DeserializeObject<List<Confirmation>>(json) ?? new List<Confirmation>();
+            var r = JsonConvert.DeserializeObject<List<Confirmation>>(json) ?? new List<Confirmation>();
+            foreach (var conf in r)
+            {
+                if (!string.IsNullOrWhiteSpace(conf.MetaData))
+                {
+                    try
+                    {
+                        var meta = JsonConvert.DeserializeObject<Dictionary<string, string>>(conf.MetaData);
+                        conf.TaskName = meta?.ContainsKey("taskName") == true ? meta["taskName"] : null;
+                    }
+                    catch { conf.TaskName = null; }
+                }
+            }
+            return r;
         }
 
         public async Task<List<Confirmation>> GetConfirmationsByEntityAsync(Guid entityId)

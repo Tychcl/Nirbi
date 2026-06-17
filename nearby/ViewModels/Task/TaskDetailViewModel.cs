@@ -354,7 +354,7 @@ public partial class TaskDetailViewModel : BaseViewModel, IDisposable
     [RelayCommand]
     private async Task GoToProfileAsync(Guid? userId)
     {
-        await Shell.Current.GoToAsync(nameof(ProfilePage), new Dictionary<string, object?> { { "id", userId } });
+        await Shell.Current.GoToAsync(nameof(ProfilePage), new Dictionary<string, object?> { { "id", userId.ToString() } });
     }
 
     [RelayCommand]

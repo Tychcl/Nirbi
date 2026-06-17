@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using nearby.Interfaces;
 using nearby.Models;
 using nearby.Views.Main;
+using Newtonsoft.Json.Linq;
 
 namespace nearby.ViewModels;
 
@@ -11,9 +12,20 @@ public partial class ConfirmationsViewModel : BaseViewModel
 {
     private readonly IConfirmationService _confirmationService;
     private readonly IUserService _userService;
+    private readonly ITaskService _taskService;
 
     [ObservableProperty]
+    private string _countText;
+    [ObservableProperty]
     private bool _isReceivedSelected = true;
+    partial void OnIsReceivedSelectedChanged(bool value)
+    {
+        CountText = value ? $"Получено: {ReceivedCount}" : $"Отправлено: {SentCount}";
+        SelectedList = value ? _receivedConfirmations : _sentConfirmations;
+    }
+
+    [ObservableProperty]
+    private ObservableCollection<Confirmation> _selectedList = new();
 
     [ObservableProperty]
     private ObservableCollection<Confirmation> _receivedConfirmations = new();
@@ -27,10 +39,11 @@ public partial class ConfirmationsViewModel : BaseViewModel
     [ObservableProperty]
     private int _sentCount;
 
-    public ConfirmationsViewModel(IConfirmationService confirmationService, IUserService userService)
+    public ConfirmationsViewModel(IConfirmationService confirmationService, IUserService userService, ITaskService taskService)
     {
         _confirmationService = confirmationService;
         _userService = userService;
+        _taskService = taskService;
         PageTitle = "Отклики";
     }
 
@@ -40,15 +53,12 @@ public partial class ConfirmationsViewModel : BaseViewModel
         IsBusy = true;
         try
         {
-            // Загружаем оба списка параллельно
             var receivedTask = _confirmationService.GetConfirmationsByReviewerAsync();
             var sentTask = _confirmationService.GetConfirmationsByInitiatorAsync();
             await Task.WhenAll(receivedTask, sentTask);
 
             var received = receivedTask.Result;
             var sent = sentTask.Result;
-
-            // Загружаем связанных пользователей (инициаторов для полученных, рецензентов для отправленных)
             await LoadRelatedUsersAsync(received, isReceived: true);
             await LoadRelatedUsersAsync(sent, isReceived: false);
 
@@ -56,6 +66,8 @@ public partial class ConfirmationsViewModel : BaseViewModel
             SentConfirmations = new ObservableCollection<Confirmation>(sent);
             ReceivedCount = received.Count;
             SentCount = sent.Count;
+            CountText = IsReceivedSelected ? $"Получено: {ReceivedCount}" : $"Отправлено: {SentCount}";
+            SelectedList = IsReceivedSelected ? _receivedConfirmations : _sentConfirmations;
         }
         catch (Exception ex)
         {
@@ -72,14 +84,10 @@ public partial class ConfirmationsViewModel : BaseViewModel
         var ids = isReceived
             ? confirmations.Select(c => c.InitiatorId).Distinct().ToList()
             : confirmations.Select(c => c.ReviewerId).Distinct().ToList();
-
         if (ids.Count == 0) return;
-
-        // Загружаем пользователей батчево (по одному – упрощённо, можно оптимизировать)
         var userTasks = ids.Select(id => _userService.LoadUserByIdAsync(id)).ToList();
         var users = await Task.WhenAll(userTasks);
         var userDict = users.Where(u => u != null).ToDictionary(u => u.Id);
-
         foreach (var conf in confirmations)
         {
             var key = isReceived ? conf.InitiatorId : conf.ReviewerId;
@@ -137,12 +145,13 @@ public partial class ConfirmationsViewModel : BaseViewModel
     [RelayCommand]
     private async Task GoToTaskAsync(Guid taskId)
     {
-        await Shell.Current.GoToAsync(nameof(TaskDetailPage), new Dictionary<string, object?> { { "taskId", taskId } });
+        var task = await _taskService.GetTaskAsync(taskId);
+        await Shell.Current.GoToAsync(nameof(TaskDetailPage), new Dictionary<string, object?> { { "task", task } });
     }
 
     [RelayCommand]
     private async Task GoToProfileAsync(Guid userId)
     {
-        await Shell.Current.GoToAsync(nameof(ProfilePage), new Dictionary<string, object?> { { "id", userId } });
+        await Shell.Current.GoToAsync(nameof(ProfilePage), new Dictionary<string, object?> { { "id", userId.ToString() } });
     }
 }

@@ -6,8 +6,26 @@ namespace nearby.Models
     {
         [JsonProperty("id")]
         public Guid Id { get; set; }
+
+        [JsonIgnore]
+        public string? Type { get; set; }
+        [JsonIgnore]
+        private string? _confirmationType { get; set; }
         [JsonProperty("confirmationType")]
-        public string? ConfirmationType { get; set; }
+        public string? ConfirmationType 
+        {
+            get => _confirmationType;
+            set
+            {
+                _confirmationType = value;
+                Type = value switch
+                {
+                    "Respond to minor task" => "Отклик",
+                    "Invite to task" => "Приглашение"
+                };
+            }
+        }
+
         [JsonProperty("entityId")]
         public Guid EntityId { get; set; }
         [JsonProperty("initiatorId")]
@@ -34,5 +52,6 @@ namespace nearby.Models
         public bool IsPending => Status == "Created";
         public bool IsAccepted => Status == "Accepted";
         public bool IsRejected => Status == "Rejected";
+        public bool IsRevoked => Status == "Revoked";
     }
 }
