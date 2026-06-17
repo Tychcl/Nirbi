@@ -38,6 +38,12 @@ namespace nearby.Models
         public int? EducationStartYear { get; set; }
         [JsonProperty("educationEndYear")]
         public int? EducationEndYear { get; set; }
+        [JsonProperty("VK")]
+        public string? VK { get; set; }
+        [JsonProperty("TG")]
+        public string? TG { get; set; }
+        [JsonProperty("MAX")]
+        public string? MAX { get; set; }
 
         public string FullName
         {

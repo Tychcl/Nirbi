@@ -7,8 +7,7 @@
              xmlns:header="clr-namespace:nearby.ContentViews.Headers"
              xmlns:local="clr-namespace:nearby.ViewModels"
              xmlns:ih="clr-namespace:nearby"
-             x:DataType="local:ProfileViewModel"
-             BackgroundColor="{StaticResource CBackgroundLight}">
+             x:DataType="local:ProfileViewModel">
     <Shell.TitleView>
         <header:BaseHeaderView BackIsVisible="{Binding IsOwnProfile, Converter={StaticResource InverseBoolConverter}}" Text="Профиль" Icon="{StaticResource EditBox}" MenuIsVisible="True" Command="{Binding GoToEditCommand}"/>
     </Shell.TitleView>
@@ -162,7 +161,7 @@
                             </Border>
                         </HorizontalStackLayout>
                     </ScrollView>
-                    <CollectionView ItemsSource="{Binding UserTasks}"
+                    <!--<CollectionView ItemsSource="{Binding UserTasks}"
                                         RemainingItemsThreshold="3"
                                         RemainingItemsThresholdReachedCommand="{Binding LoadUserTasksCommand}"
                                         VerticalOptions="Fill"
@@ -182,7 +181,7 @@
                                 <elements:TaskView Task="{Binding .}" GoToDetailCommand="{Binding Source={RelativeSource AncestorType={x:Type local:ProfileViewModel}}, Path=TaskSelectedCommand}" Padding="-20,0,-20,0"/>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
-                    </CollectionView>
+                    </CollectionView>-->
                 </VerticalStackLayout>
             </Border>
         </VerticalStackLayout>

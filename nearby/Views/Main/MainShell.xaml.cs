@@ -15,5 +15,6 @@ public partial class MainShell : Shell
         Routing.RegisterRoute(nameof(ChatDetailPage), typeof(ChatDetailPage));
         //настройки
         Routing.RegisterRoute(nameof(ThemeChangePage), typeof(ThemeChangePage));
+        Routing.RegisterRoute(nameof(ConfirmationsPage), typeof(ConfirmationsPage));
     }
 }

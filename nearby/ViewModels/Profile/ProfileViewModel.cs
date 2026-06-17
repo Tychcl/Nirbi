@@ -34,7 +34,7 @@ namespace nearby.ViewModels
         private bool _hasMoreTasks = true;
 
         [ObservableProperty]
-        private Guid? _userId = null;
+        private Guid? _userId;
         async partial void OnUserIdChanged(Guid? value)
         {
             await LoadData();
@@ -46,7 +46,7 @@ namespace nearby.ViewModels
         {
             _currentTaskPage = 1;
             _hasMoreTasks = true;
-            await LoadUserTasksAsync(reset: true);
+            //await LoadUserTasksAsync(reset: true);
         }
 
         [ObservableProperty]
@@ -126,7 +126,6 @@ namespace nearby.ViewModels
         [RelayCommand(CanExecute = nameof(IsOwnProfile))]
         private async Task GoToEditAsync()
         {
-            System.Diagnostics.Debug.WriteLine($"[ProfileVM] Вызов: {DateTime.Now}");
             if (Shell.Current != null)
                 await Shell.Current.GoToAsync(nameof(EditProfilePage), true);
             else
@@ -136,75 +135,23 @@ namespace nearby.ViewModels
                 page.BindingContext = vm;
                 await Application.Current.MainPage.Navigation.PushModalAsync(page);
             }
-            System.Diagnostics.Debug.WriteLine($"[ProfileVM] Конец: {DateTime.Now}");
         }
 
-        [RelayCommand]
-        public async Task LoadUserTasksAsync(bool reset)
-        {
-            if (_user == null) return;
-            if (reset)
-            {
-                _currentTaskPage = 1;
-                _hasMoreTasks = true;
-                UserTasks.Clear();
-            }
-            if (!_hasMoreTasks) return;
-            try
-            {
-                string status = SelectedCategory switch
-                {
-                    TaskCategory.Created => "searching",
-                    TaskCategory.InProgress => "in_progress",
-                    TaskCategory.Completed => "completed",
-                    _ => ""
-                };
-
-                var response = await _taskService.GetUserTasksAsync((Guid)_userId, status, _currentTaskPage, TaskPageSize);
-                if (response?.Data == null) return;
-
-                var tasks = response.Data;
-                if (tasks.Any())
-                {
-                    await MainThread.InvokeOnMainThreadAsync(() =>
-                    {
-                        foreach (var task in tasks)
-                            UserTasks.Add(task);
-                    });
-                    _currentTaskPage++;
-                    if (tasks.Count < TaskPageSize)
-                        _hasMoreTasks = false;
-                }
-                else
-                {
-                    _hasMoreTasks = false;
-                }
-            }
-            catch (Exception ex)
-            {
-                await ShowErrorAsync(ex.Message);
-            }
-        }
-
+        private bool loading = false;
         private async Task LoadUserData()
         {
             try
             {
+                if (loading) return;
+                loading = true;
                 IsOwnProfile = _userId == _userService.CurrentUserId || (_userService.CurrentUser != null && _userService.CurrentUser.Id == _userId);
-
-                if (IsOwnProfile)
-                {
-                    if (_userService.CurrentUser == null) return;
-                    User = _userService.CurrentUser;
-                }
-                else
-                {
-                    var response = await _userService.LoadUserByIdAsync(_userId);
-                    User = response.Data;
-                }
+                var response = await _userService.LoadUserByIdAsync(_userId);
+                User = response;
+                loading = false;
             }
             catch (Exception ex)
             {
+                loading = false;
                 await ShowErrorAsync(ex.Message);
             }
         }
@@ -212,7 +159,7 @@ namespace nearby.ViewModels
         public async Task LoadData()
         {
             await LoadUserData();
-            await LoadUserTasksAsync(reset: true);
+            //await LoadUserTasksAsync(reset: true);
         }
 
         public void Dispose()

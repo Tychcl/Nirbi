@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModels="clr-namespace:nearby.ViewModels"
+             xmlns:models="clr-namespace:nearby.Models"
+             xmlns:element="clr-namespace:nearby.ContentViews.Elements"
+             xmlns:ih="clr-namespace:nearby"
+             x:Class="nearby.Views.Main.ConfirmationsPage"
+             x:DataType="viewModels:ConfirmationsViewModel"
+             Title="{Binding PageTitle}">
+    <Grid RowDefinitions="Auto, Auto, *" Padding="0" RowSpacing="0">
+        <Grid Grid.Row="0" ColumnDefinitions="*,*" HeightRequest="50">
+            <Border Style="{StaticResource EditSection}" Margin="0" Padding="0" StrokeThickness="0">
+                <Button Text="Полученные"
+                        BackgroundColor="{Binding IsReceivedSelected, Converter={StaticResource TabBackgroundConverter}, ConverterParameter=true}"
+                        TextColor="{Binding IsReceivedSelected, Converter={StaticResource TabTextColorConverter}, ConverterParameter=true}"
+                        Command="{Binding SwitchTabCommand}" CommandParameter="received" />
+            </Border>
+            <Border Grid.Column="1" Style="{StaticResource EditSection}" Margin="0" Padding="0" StrokeThickness="0">
+                <Button Text="Отправленные"
+                        BackgroundColor="{Binding IsReceivedSelected, Converter={StaticResource TabBackgroundConverter}, ConverterParameter=false}"
+                        TextColor="{Binding IsReceivedSelected, Converter={StaticResource TabTextColorConverter}, ConverterParameter=false}"
+                        Command="{Binding SwitchTabCommand}" CommandParameter="sent" />
+            </Border>
+        </Grid>
+        <Label Grid.Row="1" Margin="15,5" Style="{StaticResource CommonLabel}">
+            <Label.Text>
+                <Binding Path="IsReceivedSelected" Converter="{StaticResource BoolToCountConverter}"/>
+            </Label.Text>
+        </Label>
+        <CollectionView Grid.Row="2"
+                        ItemsSource="{Binding IsReceivedSelected, Converter={StaticResource ConfirmationListConverter}}"
+                        SelectionMode="None">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Confirmation">
+                    <Border Style="{StaticResource EditSection}" Margin="15,5">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="{Binding TaskName}" Style="{StaticResource SectionTitle}">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewModels:ConfirmationsViewModel}}, Path=GoToTaskCommand}"
+                                                          CommandParameter="{Binding EntityId}"/>
+                                </Label.GestureRecognizers>
+                            </Label>
+                            <Grid ColumnDefinitions="*, Auto" RowSpacing="4">
+                                <element:MiniUserProfile Grid.Column="0" User="{Binding RelatedUser}" ImageSize="50" IsFullNameMode="True">
+                                    <element:MiniUserProfile.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewModels:ConfirmationsViewModel}}, Path=GoToProfileCommand}"
+                                                              CommandParameter="{Binding RelatedUser.Id}"/>
+                                    </element:MiniUserProfile.GestureRecognizers>
+                                </element:MiniUserProfile>
+                                <HorizontalStackLayout Grid.Column="1" Spacing="5" VerticalOptions="Center">
+                                    <HorizontalStackLayout IsVisible="{Binding IsPending}" Spacing="5" VerticalOptions="Center">
+                                        <Button ih:IconHelper.Icon="{StaticResource Confirm}" 
+                                                ih:IconHelper.Color="CSuccess" 
+                                                Style="{StaticResource ImageButtonBorder}" 
+                                                ih:IconHelper.Size="36" 
+                                                BorderColor="{DynamicResource CSuccess}"
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewModels:ConfirmationsViewModel}}, Path=AcceptCommand}"
+                                                CommandParameter="{Binding Id}"/>
+                                        <Button ih:IconHelper.Icon="{StaticResource Cancel}" 
+                                                ih:IconHelper.Color="CError" 
+                                                Style="{StaticResource ImageButtonBorder}" 
+                                                ih:IconHelper.Size="36" 
+                                                BorderColor="{DynamicResource CError}"
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewModels:ConfirmationsViewModel}}, Path=RejectCommand}"
+                                                CommandParameter="{Binding Id}"/>
+                                    </HorizontalStackLayout>
+                                    <Label Text="Принят" TextColor="{DynamicResource CSuccess}" IsVisible="{Binding IsAccepted}" VerticalOptions="Center"/>
+                                    <Label Text="Отклонён" TextColor="{DynamicResource CError}" IsVisible="{Binding IsRejected}" VerticalOptions="Center"/>
+                                    <Button Text="Отозвать" IsVisible="{Binding IsPending}" 
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewModels:ConfirmationsViewModel}}, Path=RevokeCommand}"
+                                            CommandParameter="{Binding Id}" />
+                                </HorizontalStackLayout>
+                            </Grid>
+                            <HorizontalStackLayout Spacing="15">
+                                <Label Style="{StaticResource EditLabel}" FontSize="12"
+           Text="{Binding CreatedAt, StringFormat='Создан: {0:dd.MM.yyyy HH:mm}'}" />
+                                <Label Style="{StaticResource EditLabel}" FontSize="12"
+           Text="{Binding ExpiresAt, StringFormat='Истекает: {0:dd.MM.yyyy HH:mm}'}" />
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

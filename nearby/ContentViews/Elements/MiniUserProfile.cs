@@ -10,7 +10,7 @@ namespace nearby.ContentViews.Elements;
 public class MiniUserProfile : ContentView
 {
     public static readonly BindableProperty UserProperty =
-        BindableProperty.Create(nameof(User), typeof(User), typeof(MiniUserProfile), null,
+        BindableProperty.Create(nameof(User), typeof(object), typeof(MiniUserProfile), null,
             propertyChanged: OnUserChanged);
 
     public static readonly BindableProperty ImageSizeProperty =
@@ -34,9 +34,9 @@ public class MiniUserProfile : ContentView
         BindableProperty.Create(nameof(ExtraContent), typeof(View), typeof(MiniUserProfile), null,
             propertyChanged: OnExtraContentChanged);
 
-    public User? User
+    public object? User
     {
-        get => (User?)GetValue(UserProperty);
+        get => (object?)GetValue(UserProperty);
         set => SetValue(UserProperty, value);
     }
     public int ImageSize
@@ -72,12 +72,16 @@ public class MiniUserProfile : ContentView
 
     private readonly Grid _rootGrid;
     private readonly ProfileImageView _piv;
-    private readonly VerticalStackLayout _detailedInfo;   // Имя, Фамилия, ДР
-    private readonly VerticalStackLayout _shortInfo;      // ФИО, Email, Телефон
-    private readonly Label _labelName, _labelSurname, _labelBirthDate;
-    private readonly Label _labelFullName, _labelEmail, _labelPhone;
+    private readonly VerticalStackLayout _detailedInfo;
+    private readonly VerticalStackLayout _shortInfo;
+    private readonly Label _labelName;
+    private readonly Label _labelSurname;
+    private readonly Label _labelBirthDate;
+    private readonly Label _labelFullName;
+    private readonly Label _labelEmail;
+    private readonly Label _labelPhone;
     private readonly ContentView _extraContentSlot;
-    private readonly ContentView _userDataContainer;      // контейнер с BindingContext = User
+    private readonly ContentView _userDataContainer;
 
     public MiniUserProfile()
     {
@@ -130,9 +134,8 @@ public class MiniUserProfile : ContentView
         _userDataContainer = new ContentView
         {
             VerticalOptions = LayoutOptions.Center,
-            Content = _detailedInfo 
+            Content = _detailedInfo
         };
-        _userDataContainer.SetBinding(BindableObject.BindingContextProperty, new Binding(nameof(User), source: this));
 
         _extraContentSlot = new ContentView { VerticalOptions = LayoutOptions.Center };
         _extraContentSlot.SetBinding(ContentView.ContentProperty, new Binding(nameof(ExtraContent), source: this));
@@ -158,22 +161,76 @@ public class MiniUserProfile : ContentView
 
         _piv.SetBinding(IsVisibleProperty, new Binding(nameof(ImageIsVisible), source: this));
         _piv.SetBinding(ProfileImageView.ImageSizeProperty, new Binding(nameof(ImageSize), source: this));
-        _piv.SetBinding(ProfileImageView.ImageProperty, new Binding("User.ProfilePicture", source: this) { TargetNullValue = "test_profile_image.jpg" });
 
-        _labelName.SetBinding(Label.TextProperty, new Binding("Name"));
-        _labelSurname.SetBinding(Label.TextProperty, new Binding("Surname"));
-        _labelBirthDate.SetBinding(Label.TextProperty, new Binding("BirthDate", stringFormat: "{0:dd.MM.yyyy}"));
+        PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(User))
+                UpdateUserData();
+        };
 
-        _labelFullName.SetBinding(Label.TextProperty, new Binding("FullName"));
-        _labelEmail.SetBinding(Label.TextProperty, new Binding("Email"));
-        _labelPhone.SetBinding(Label.TextProperty, new Binding("Phone"));
+        UpdateUserData();
+    }
 
-        UpdateDetailMode();
+    private void UpdateUserData()
+    {
+        if (User == null)
+        {
+            _labelName.Text = string.Empty;
+            _labelSurname.Text = string.Empty;
+            _labelBirthDate.Text = string.Empty;
+            _labelFullName.Text = string.Empty;
+            _labelEmail.Text = string.Empty;
+            _labelPhone.Text = string.Empty;
+            _piv.SetBinding(ProfileImageView.ImageProperty, new Binding("User.ProfilePicture", source: this) { TargetNullValue = "test_profile_image.jpg" });
+            return;
+        }
+
+        bool isCandidate = User is Candidate;
+        bool isUser = User is User;
+
+        string fullName = string.Empty;
+        string? profilePicture = null;
+
+        if (isUser)
+        {
+            var u = (User)User;
+            fullName = u.FullName ?? string.Empty;
+            //profilePicture = u.;
+            _labelName.Text = u.Name ?? string.Empty;
+            _labelSurname.Text = u.Surname ?? string.Empty;
+            _labelBirthDate.Text = u.BirthDate?.ToString("dd.MM.yyyy") ?? string.Empty;
+            _labelEmail.Text = u.Email ?? string.Empty;
+            _labelPhone.Text = u.Phone ?? string.Empty;
+        }
+        else if (isCandidate)
+        {
+            var c = (Candidate)User;
+            fullName = $"{c.SecondName} {c.FirstName} {c.LastName}" ?? string.Empty;
+            _labelName.Text = c.FirstName ?? string.Empty;
+            _labelSurname.Text = c.SecondName ?? string.Empty;
+            _labelBirthDate.Text = string.Empty;
+            _labelEmail.Text = string.Empty;
+            _labelPhone.Text = string.Empty;
+        }
+
+        _labelFullName.Text = fullName;
+
+        _labelBirthDate.IsVisible = !OnlyFullNameMode && !string.IsNullOrEmpty(_labelBirthDate.Text);
+        _labelEmail.IsVisible = !OnlyFullNameMode && !string.IsNullOrEmpty(_labelEmail.Text);
+        _labelPhone.IsVisible = !OnlyFullNameMode && !string.IsNullOrEmpty(_labelPhone.Text);
+        _piv.Image = "test_profile_image.jpg";
+        //if (profilePicture != null)
+        //{
+        //    _piv.Image = ImageSource.FromUri(new Uri(profilePicture));
+        //}
+        //else
+        //{
+        //    _piv.Image = "test_profile_image.jpg";
+        //}
     }
 
     private static void OnUserChanged(BindableObject bindable, object oldValue, object newValue)
     {
-        
     }
 
     private static void OnFullNameModeChanged(BindableObject bindable, object oldValue, object newValue)
@@ -184,13 +241,12 @@ public class MiniUserProfile : ContentView
 
     private static void OnExtraContentChanged(BindableObject bindable, object oldValue, object newValue)
     {
-        
     }
 
     private void UpdateDetailMode()
     {
         _userDataContainer.Content = IsFullNameMode || OnlyFullNameMode ? _shortInfo : _detailedInfo;
-        _labelEmail.IsVisible = !OnlyFullNameMode;
-        _labelPhone.IsVisible = !OnlyFullNameMode;
+        _labelEmail.IsVisible = !OnlyFullNameMode && !string.IsNullOrEmpty(_labelEmail.Text);
+        _labelPhone.IsVisible = !OnlyFullNameMode && !string.IsNullOrEmpty(_labelPhone.Text);
     }
 }

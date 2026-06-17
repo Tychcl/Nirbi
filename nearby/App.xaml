@@ -25,6 +25,10 @@
             <converters:AndConverter x:Key="AndConverter"/>
             <converters:DoubleToRectConverter x:Key="DoubleToRectConverter"/>
             <converters:GreaterThanConverter x:Key="GreaterThanConverter"/>
+            <converters:TabBackgroundConverter x:Key="TabBackgroundConverter" />
+            <converters:TabTextColorConverter x:Key="TabTextColorConverter" />
+            <converters:BoolToCountConverter x:Key="BoolToCountConverter" />
+            <converters:ConfirmationListConverter x:Key="ConfirmationListConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

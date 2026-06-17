@@ -6,8 +6,7 @@
              xmlns:models="clr-namespace:nearby.Models"
              xmlns:header="clr-namespace:nearby.ContentViews.Headers"
              xmlns:CVE="clr-namespace:nearby.ContentViews.Entry"
-             x:DataType="viewmodels:EditProfileViewModel"
-             BackgroundColor="{StaticResource CBackgroundLight}">
+             x:DataType="viewmodels:EditProfileViewModel">
     <Shell.TitleView>
         <header:BaseHeaderView BackIsVisible="True" Command="{Binding SaveCommand}" MenuIsVisible="True" Text="Редактирование профиля" Icon="{StaticResource Confirm}"/>
     </Shell.TitleView>
@@ -22,7 +21,7 @@
                                     StrokeThickness="1"
                                     StrokeShape="RoundRectangle 15"
                                     HorizontalOptions="Start">
-                            <Image Source="{Binding User.ProfilePicture, TargetNullValue='test_profile_image.jpg'}"
+                            <Image Source="test_profile_image.jpg"
                                        Aspect="AspectFill">
                                 <Image.Clip>
                                     <RoundRectangleGeometry CornerRadius="15" Rect="0,0,80,80"/>
@@ -43,10 +42,12 @@
             <Border Style="{StaticResource EditSection}">
                 <VerticalStackLayout>
                     <Label Style="{StaticResource SectionTitle}" Text="ФИО"/>
-                    <Label Style="{StaticResource EditLabel}" Text="Полное имя *"/>
-                    <Entry Style="{StaticResource EditEntry}"
-                               Text="{Binding User.FullName, Mode=TwoWay}"
-                               Placeholder="Фамилия Имя Отчество"/>
+                    <Label Style="{StaticResource EditLabel}" Text="Фамилия"/>
+                    <Entry Placeholder="Фамилия" Text="{Binding User.Surname}" Style="{StaticResource EditEntry}" Margin="0"/>
+                    <Label Style="{StaticResource EditLabel}" Text="Имя"/>
+                    <Entry Placeholder="Имя" Text="{Binding User.Name}" Style="{StaticResource EditEntry}" Margin="0"/>
+                    <Label Style="{StaticResource EditLabel}" Text="Отчество"/>
+                    <Entry Placeholder="Отчество" Text="{Binding User.Patronymic}" Style="{StaticResource EditEntry}" Margin="0"/>
                 </VerticalStackLayout>
             </Border>
             <Border Style="{StaticResource EditSection}">

@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using nearby.Classes;
+using nearby.Interfaces;
 using nearby.Models;
 using nearby.Services;
 
@@ -51,18 +52,19 @@ namespace nearby.ViewModels
 
                 var updatedData = new
                 {
-                    full_name = User.FullName,
-                    city = User.City,
-                    birth_date = User.BirthDate?.ToString("yyyy-MM-dd"),
-                    email = User.Email,
+                    firstName = User.Name,
+                    secondName = User.Surname,
+                    lastName = User.Patronymic,
                     phone = User.Phone,
+                    email = User.Email,
+                    birthDate = User.BirthDate,
+                    city = User.City,
                     about = User.About,
-                    education_institution = User.EducationInstitution,
-                    education_degree = User.EducationDegree,
-                    education_field = User.EducationField,
-                    education_start_year = string.IsNullOrWhiteSpace(User.EducationStartYear.ToString()) ? 0 : User.EducationStartYear,
-                    education_end_year = string.IsNullOrWhiteSpace(User.EducationEndYear.ToString()) ? 0 : User.EducationEndYear,
-                    current_password = CurrentPassword
+                    educationPlace = User.EducationInstitution,
+                    educationStartYear = User.EducationStartYear,
+                    educationEndYear = User.EducationEndYear,
+                    educationField = User.EducationField,
+                    currentPassword = CurrentPassword
                 };
 
                 var r = await _userService.UpdateUserByIdAsync(updatedData);

@@ -13,16 +13,14 @@ namespace nearby
         private readonly ITokenService _tokenService;
         private readonly IUserService _userService;
         private readonly IServiceProvider _serviceProvider;
-        private readonly IAuthService _authService;
         private readonly ApiClient _apiClient;
 
-        public App(ITokenService tokenService, IUserService userService, IServiceProvider serviceProvider, IAuthService authService, ApiClient apiClient)
+        public App(ITokenService tokenService, IUserService userService, IServiceProvider serviceProvider, ApiClient apiClient)
         {
             InitializeComponent();
             _tokenService = tokenService;
             _userService = userService;
             _serviceProvider = serviceProvider;
-            _authService = authService;
             _apiClient = apiClient;
             ThemeManager.LoadSavedTheme();
             MainPage = _serviceProvider.GetRequiredService<LoadingPage>();
@@ -42,12 +40,23 @@ namespace nearby
                     return;
                 }
                 var auth = await _apiClient.RefreshAsync(token);
-                _userService.CurrentUserId = auth.UserId;
+                if (auth is null)
+                {
+                    MainPage = _serviceProvider.GetRequiredService<AuthShell>();
+                    return;
+                }
+                _userService.CurrentUserId = auth!.UserId;
                 await _tokenService.SetTokenAsync(TokenService.TokenKey.Access, auth.AccessToken);
                 await _tokenService.SetTokenAsync(TokenService.TokenKey.Refresh, auth.RefreshToken);
-                if (_userService.CurrentUser is not null)
+                if (_userService.CurrentUserId is not null)
                 {
+                    await _userService.LoadUserByIdAsync(_userService.CurrentUserId);
                     MainPage = _serviceProvider.GetRequiredService<MainShell>();
+                    return;
+                }
+                else
+                {
+                    MainPage = _serviceProvider.GetRequiredService<AuthShell>();
                     return;
                 }
             }

@@ -3,6 +3,8 @@ using CommunityToolkit.Mvvm.Input;
 
 using nearby.Classes.Validation;
 using nearby.Interfaces;
+using nearby.Services;
+using nearby.Views.Main;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
@@ -11,6 +13,9 @@ namespace nearby.ViewModels
     public partial class RegViewModel : BaseViewModel
     {
         private readonly IAuthService _authService;
+        private readonly ITokenService _tokenService;
+        private readonly IUserService _userService;
+        private readonly IServiceProvider _serviceProvider;
 
         [ObservableProperty]
         [NotifyDataErrorInfo]
@@ -56,11 +61,14 @@ namespace nearby.ViewModels
         [property: Compare(nameof(Password), ErrorMessage = "Пароли не совпадают")]
         private string _confirm;
 
-        public RegViewModel(IAuthService authService)
+        public RegViewModel(IAuthService authService, ITokenService tokenService, IUserService userService, IServiceProvider serviceProvider)
         {
             _authService = authService;
             ValidateAllProperties();
             ErrorsChanged += OnErrorsChanged;
+            _tokenService = tokenService;
+            _userService = userService;
+            _serviceProvider = serviceProvider;
         }
 
         protected override void OnErrorsChanged(object? sender, DataErrorsChangedEventArgs e)
@@ -82,8 +90,12 @@ namespace nearby.ViewModels
             try
             {
                 var success = await _authService.RegisterAsync(FName, SName, LName, Phone, Email, Password);
-                await ShowMsgAsync("Успех", "Регистрация прошла успешно. Теперь войдите.", "OK");
-                await Application.Current.MainPage.Navigation.PopAsync();
+                await _tokenService.SetTokenAsync(TokenService.TokenKey.Access, success.AccessToken);
+                await _tokenService.SetTokenAsync(TokenService.TokenKey.Refresh, success.RefreshToken);
+                _userService.CurrentUserId = success.UserId;
+                Application.Current.MainPage = _serviceProvider.GetRequiredService<MainShell>();
+                //await ShowMsgAsync("Успех", "Регистрация прошла успешно. Теперь войдите.", "OK");
+                //await Application.Current.MainPage.Navigation.PopAsync();
             }
             catch (Exception ex)
             {

@@ -13,7 +13,7 @@
             <Label Grid.Row="0" Grid.Column="0" Style="{StaticResource CommonLabel}" Text="{Binding Title}"/>
             <Label Grid.Row="0" Grid.Column="1" Text="{Binding Reward, StringFormat='{0:F2}'}"  Style="{StaticResource EditLabel}" TextColor="{DynamicResource CPrimary}" HorizontalOptions="End"/>
             <Label Grid.Row="1" Grid.Column="0" Text="{Binding Location}" Style="{StaticResource EditLabel}" />
-            <Label Grid.Row="1" Grid.Column="1" Text="{Binding Deadline, StringFormat='{0:dd.MM.yyyy}'}" Style="{StaticResource EditLabel}" HorizontalOptions="End"/>
+            <!--<Label Grid.Row="1" Grid.Column="1" Text="{Binding Deadline, StringFormat='{0:dd.MM.yyyy}'}" Style="{StaticResource EditLabel}" HorizontalOptions="End"/>-->
         </Grid>
     </Border>
 </ContentView>

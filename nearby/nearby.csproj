@@ -93,6 +93,7 @@
 	  <None Remove="Platforms\Android\xml\network_security_config.xml" />
 	  <None Remove="Resources\Images\AuthShell\login.svg" />
 	  <None Remove="Resources\Images\AuthShell\register.svg" />
+	  <None Remove="Resources\Images\MainShell\confirmations.svg" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -103,6 +104,7 @@
 	  <MauiImage Include="Resources\Images\AuthShell\login.svg" />
 	  <MauiImage Include="Resources\Images\AuthShell\register.svg" />
 	  <MauiImage Include="Resources\Images\MainShell\chats.svg" />
+	  <MauiImage Include="Resources\Images\MainShell\confirmations.svg" />
 	  <MauiImage Include="Resources\Images\MainShell\funds.svg" />
 	  <MauiImage Include="Resources\Images\MainShell\profile.svg" />
 	  <MauiImage Include="Resources\Images\MainShell\settings.svg" />
@@ -112,8 +114,10 @@
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Maui" Version="12.0.0" />
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+		<PackageReference Include="Mapsui.Maui" Version="5.1.0" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.8" />
+		<PackageReference Include="Microsoft.Maui.Controls.Maps" Version="9.0.120" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 	</ItemGroup>
 
@@ -176,6 +180,9 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\Main\Chats\CreateChatPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\Main\Confirmations\ConfirmationsPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\Main\Tasks\TaskAddEditPage.xaml">

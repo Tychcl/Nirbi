@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -17,48 +18,61 @@ namespace nearby.ViewModels
     {
         private readonly ITaskService _taskService;
         private readonly IServiceProvider _serviceProvider;
+        private readonly IGeocodingService _geocodingService;
 
         [ObservableProperty]
-        private List<string> priorityList = new() { "Все", "Низкий", "Средний", "Высокий" };
-
-        private Dictionary<string, string> priorityMap = new()
+        private List<string> sortOptions = new()
         {
-            {"Все", ""},
-            {"Низкий", "low"},
-            {"Средний", "medium"},
-            {"Высокий", "high"}
+            "Сначала новые",
+            "По вознаграждению",
+            "По волонтёрам"
         };
+        [ObservableProperty]
+        private string selectedSort = "Сначала новые";
+        partial void OnSelectedSortChanged(string value)
+        {
+            sort();
+        }
+
+        [ObservableProperty]
+        private string? cityFilter;
+        private CancellationTokenSource? _debounceCts;
+        async partial void OnCityFilterChanged(string? value)
+        {
+            _ = DebouncedApplyFiltersAsync();
+        }
+
+        private async Task DebouncedApplyFiltersAsync()
+        {
+            _debounceCts?.Cancel();
+            _debounceCts = new CancellationTokenSource();
+            var token = _debounceCts.Token;
+
+            try
+            {
+                await Task.Delay(300, token);
+                sort();
+            }
+            catch (TaskCanceledException){}
+        }
 
         [ObservableProperty]
         private bool _isRefreshing;
 
         [ObservableProperty]
-        private string _priorityFilter;
-        async partial void OnPriorityFilterChanged(string value)
-        {
-            _priorityFilter = priorityMap.GetValueOrDefault(PriorityFilter ?? "Все", "");
-            await Refresh();
-        }
-
-        [ObservableProperty]
-        private string _cityFilter;
-        async partial void OnCityFilterChanged(string value)
-        {
-            await Refresh();
-        }
-
-        [ObservableProperty]
         private ObservableCollection<TaskItem> _tasks = new();
+        private ObservableCollection<TaskItem> _allTasks = new();
 
         private int _currentPage = 1;
         private bool _hasMorePages = true;
-        private const int PageSize = 10;
+        private const int PageSize = 20;
 
 
-        public TasksViewModel(ITaskService taskService, IServiceProvider serviceProvider)
+        public TasksViewModel(ITaskService taskService, IServiceProvider serviceProvider, IGeocodingService geocodingService)
         {
             _taskService = taskService;
             _serviceProvider = serviceProvider;
+            _geocodingService = geocodingService;
         }
 
         [RelayCommand(CanExecute = nameof(CanRefresh))]
@@ -79,6 +93,7 @@ namespace nearby.ViewModels
                 _currentPage = 1;
                 _hasMorePages = true;
                 Tasks.Clear();
+                _allTasks.Clear();
             }
         }
         private async Task LoadTasksAsync(bool reset)
@@ -92,13 +107,23 @@ namespace nearby.ViewModels
             IsBusy = true;
             try
             {
-                var response = await _taskService.GetTasksAsync(_currentPage, PageSize, "searching", PriorityFilter, CityFilter);
-                if (response.Data != null && response.Data.Any())
+                var response = await _taskService.GetTasksAsync(offset: (_currentPage - 1) * PageSize, limit: PageSize * _currentPage);
+                if (response != null && response.Any())
                 {
-                    foreach (var task in response.Data)
-                        Tasks.Add(task);
+                    foreach (var task in response)
+                    {
+                        if (string.IsNullOrEmpty(task.Location))
+                        {
+                            task.Location = await _geocodingService.GetAddressAsync((double)task.Latitude, (double)task.Longitude) ?? "Адрес недоступен";
+                        }
+                        if (task.Status == "В поиске волонтеров")
+                        {
+                            _allTasks.Add(task);
+                        }
+                    }
+                    sort();
                     _currentPage++;
-                    if (response.Data.Count < PageSize)
+                    if (response.Count < PageSize)
                         _hasMorePages = false;
                 }
                 else
@@ -134,7 +159,7 @@ namespace nearby.ViewModels
         [RelayCommand]
         private void FilterClear()
         {
-            PriorityFilter = string.Empty;
+            SelectedSort = "Сначала новые";
             CityFilter = string.Empty;
         }
 
@@ -145,7 +170,7 @@ namespace nearby.ViewModels
             {
                 var confirm = await Application.Current.MainPage.DisplayAlert("Удаление", $"Удалить задачу \"{task.Title}\"?", "Да", "Нет");
                 if (!confirm) return;
-                var success = await _taskService.DeleteTaskAsync(task.Id);
+                await _taskService.DeleteTaskAsync(task.Id);
                 Tasks.Remove(task);
                 await Application.Current.MainPage.DisplayAlert("Успех", "Задача удалена", "OK");
             }
@@ -153,6 +178,30 @@ namespace nearby.ViewModels
             {
                 await ShowErrorAsync(ex.Message);
             }
+        }
+
+        private void sort()
+        {
+            IEnumerable<TaskItem> sorted = _allTasks;
+
+            switch (SelectedSort)
+            {
+                case "По вознаграждению":
+                    sorted = _allTasks.OrderByDescending(t => t.Reward);
+                    break;
+                case "По волонтёрам":
+                    sorted = _allTasks.OrderByDescending(t => t.NeededVolunteers);
+                    break;
+                    // "Сначала новые" или default – оставляем исходный порядок
+            }
+            if (!string.IsNullOrEmpty(CityFilter))
+            {
+                sorted = sorted.Where(x => x.Location != null &&
+                                           x.Location.Contains(CityFilter, StringComparison.OrdinalIgnoreCase));
+            }
+            Tasks.Clear();
+            foreach (var task in sorted)
+                Tasks.Add(task);
         }
     }
 }

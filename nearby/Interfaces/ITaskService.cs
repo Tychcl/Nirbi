@@ -1,22 +1,20 @@
 ﻿using nearby.Models;
-using nearby.Classes;
+using nearby.Services;
 
-namespace nearby.Interfaces;
-
-public interface ITaskService
+namespace nearby.Interfaces
 {
-    event EventHandler<TaskItem> TaskUpdated;
-    Task<ApiResponse<List<TaskItem>>> GetTasksAsync(int page = 1, int limit = 10, string status = null, string priority = null, string city = null);
-    Task<ApiResponse<List<TaskItem>>> GetUserTasksAsync(Guid userId, string status, int page = 1, int pageSize = 10);
-    Task<ApiResponse<TaskItem>> GetTaskAsync(int id);
-    Task<ApiResponse<TaskItem>> CreateTaskAsync(TaskItem task);
-    Task<ApiResponse<TaskItem>> UpdateTaskAsync(int id, TaskItem task);
-    Task<ApiResponse<TaskItem>> DeleteTaskAsync(int id);
-    Task<ApiResponse<TaskItem>> VolunteerForTaskAsync(int taskId);
-    Task<ApiResponse<List<TaskVolunteerInfo>>> GetTaskVolunteersAsync(int taskId);
-    Task<ApiResponse<TaskItem>> AcceptVolunteerAsync(int taskId, Guid volunteerUserId);
-    Task<ApiResponse<TaskItem>> RejectVolunteerAsync(int taskId, Guid volunteerUserId);
-    Task<ApiResponse<TaskItem>> StartTaskAsync(int taskId);
-    Task<ApiResponse<TaskItem>> CompleteTaskAsync(int taskId);
-    Task<ApiResponse<string>> GetMyVolunteerStatusAsync(int taskId);
+    public interface ITaskService
+    {
+        Task<TaskItem> CreateTaskAsync(CreateMinorTaskRequest request);
+        Task<List<TaskItem>> GetTasksAsync(int offset = 0, int limit = 20, string? search = null, string? status = null, string? sort = null);
+        Task<TaskItem> GetTaskAsync(Guid minorTaskId);
+        Task<TaskItem> UpdateTaskAsync(Guid minorTaskId, UpdateMinorTaskRequest request);
+        Task<TaskItem> UpdateTaskStatusAsync(Guid minorTaskId, Guid statusId);
+        Task DeleteTaskAsync(Guid minorTaskId);
+        Task<List<string>> GetTaskNamesByIdsAsync(List<Guid> ids);
+        Task<List<nearby.Services.TaskStatus>> GetStatusesAsync();
+        Task<List<Guid>> GetTaskParticipantsAsync(Guid minorTaskId);
+        Task RemoveParticipantAsync(Guid minorTaskId, Guid participantId);
+        Task<List<string>> GetTaskCollectionsByIdsAsync(List<Guid> ids);
+    }
 }

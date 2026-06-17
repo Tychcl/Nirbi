@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
+using nearby.Interfaces;
 using nearby.Services;
 using nearby.ViewModels;
 

@@ -10,7 +10,7 @@
             HorizontalOptions="Start"
             StrokeShape="RoundRectangle 6">
         <Grid ColumnDefinitions="Auto, *">
-            <Image Grid.Column="0" ih:IconHelper.Icon="{Binding Image, Source={x:Reference thisControl}}" Scale="1.2" Style="{StaticResource AutoTint}"/>
+            <Image Grid.Column="0" ih:IconHelper.Icon="{Binding Image, Source={x:Reference thisControl}}" Scale="1.2"/>
             <VerticalStackLayout Grid.Column="1" HorizontalOptions="Start" Margin="10,0,0,0">
                 <Label Style="{StaticResource EditLabel}" Text="{Binding Title, Source={x:Reference thisControl}}" />
                 <Label Style="{StaticResource CommonLabel}" FontAttributes="Bold" Text="{Binding Text, Source={x:Reference thisControl}}"/>

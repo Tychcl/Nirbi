@@ -27,6 +27,7 @@ public class ApiClient
         try
         {
             var request = new HttpRequestMessage(method, url) { Content = content };
+            //var r = request.RequestUri.ToString();
             string? token = await _tokenService.GetTokenAsync(TokenService.TokenKey.Access);
             if (!string.IsNullOrEmpty(token))
                 request.Headers.Add("Authorization", $"Bearer {token}");
@@ -61,7 +62,12 @@ public class ApiClient
     {
         return await SendRequestAsync(HttpMethod.Put, url, content);
     }
-    
+
+    public async Task<HttpResponseMessage?> PatchAsync(string url, HttpContent content)
+    {
+        return await SendRequestAsync(HttpMethod.Patch, url, content);
+    }
+
     public async Task<HttpResponseMessage?> DeleteAsync(string url)
     {
         return await SendRequestAsync(HttpMethod.Delete, url);

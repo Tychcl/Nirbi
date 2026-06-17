@@ -9,6 +9,7 @@ using nearby.ViewModels;
 using nearby.Views;
 using nearby.Views.Auth;
 using nearby.Views.Main;
+using SkiaSharp.Views.Maui.Controls.Hosting;
 
 namespace nearby
 {
@@ -17,8 +18,8 @@ namespace nearby
         public static MauiApp CreateMauiApp()
         {
             var builder = MauiApp.CreateBuilder();
-            builder
-                .UseMauiApp<App>()
+            builder.UseMauiApp<App>()
+                .UseSkiaSharp()
                 .UseMauiCommunityToolkit()
                 .ConfigureFonts(fonts =>
                 {
@@ -59,6 +60,8 @@ namespace nearby
             builder.Services.AddTransient<IAuthService, AuthService>();
             builder.Services.AddSingleton<ITaskService, TaskService>();
             builder.Services.AddSingleton<IChatService, ChatService>();
+            builder.Services.AddSingleton<IGeocodingService, NominatimGeocodingService>();
+            builder.Services.AddSingleton<IConfirmationService, ConfirmationService>();
 
             builder.Services.AddTransient<CreateChatViewModel>();
             builder.Services.AddTransient<CreateChatPage>();
@@ -79,6 +82,7 @@ namespace nearby
             builder.Services.AddTransient<TaskAddEditViewModel>();
             builder.Services.AddTransient<SettingsViewModel>();
             builder.Services.AddTransient<ThemeChangeViewModel>();
+            builder.Services.AddTransient<ConfirmationsViewModel>();
 
             //=====================
             //Страницы

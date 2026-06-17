@@ -73,12 +73,10 @@ namespace nearby.ViewModels
             IsBusy = true;
             try
             {
-                var response = await _userService.SearchUsersAsync(query, limit: 20);
-                if (response.Data == null) return;
-
-                var users = response.Data;
+                var response = await _userService.GetUsersAsync(search: query, fields: new List<string>() { "firstName", "secondName", "lastName", "username", "email", "phone" });
+                if (response == null) return;
                 SearchResults.Clear();
-                foreach (var user in users)
+                foreach (var user in response)
                 {
                     if (!SelectedUsers.Any(u => u.Id == user.Id) && user.Id != _userService.CurrentUser.Id)
                         SearchResults.Add(user);

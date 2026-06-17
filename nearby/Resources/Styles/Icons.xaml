@@ -21,7 +21,7 @@
     
     <!--MainShell-->
     <x:String x:Key="Tasks">&#xE85D;</x:String>
-    <x:String x:Key="Funds">&#xF5A4;</x:String>
+    <x:String x:Key="Confirmations">&#xF00E;</x:String>
     <x:String x:Key="Chats">&#xE0Bf;</x:String>
     <x:String x:Key="Settings">&#xE8B8;</x:String>
     <x:String x:Key="Profile">&#xE853;</x:String>

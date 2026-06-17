@@ -14,18 +14,21 @@
         <header:BaseHeaderView Text="{Binding Title, Source={x:Reference thisControl}}" BackIsVisible="False" Icon="{StaticResource AddNote}" MenuIsVisible="True" Command="{Binding GoToCreateCommand}"/>
     </Shell.TitleView>
     <Grid RowDefinitions="Auto, *" RowSpacing="12" Margin="0,16,0,0">
-        <Border Style="{StaticResource Card}" Grid.Row="0" Margin="20,0,20,0">
-            <VerticalStackLayout Spacing="5">
-                <Grid ColumnDefinitions="*, Auto">
-                    <Label Text="Фильтры" Style="{StaticResource SectionTitle}" Margin="0" Grid.Column="0" VerticalOptions="Center"/>
-                    <Button Grid.Column="1" Style="{StaticResource BorderButton}" local:IconHelper.Icon="{StaticResource FilterOff}" local:IconHelper.Color="CBackground" Command="{Binding FilterClearCommand}"/>
-                </Grid>
-                <HorizontalStackLayout Spacing="5">
-                    <Picker Title="Приоритет" SelectedItem="{Binding PriorityFilter}" WidthRequest="120" ItemsSource="{Binding PriorityList}"/>
-                    <Entry Placeholder="Город" Text="{Binding CityFilter}" WidthRequest="120"/>
-                </HorizontalStackLayout>
-            </VerticalStackLayout>
-        </Border>
+        <Grid Grid.Row="0" ColumnDefinitions="*, Auto">
+            <Border Style="{StaticResource Card}" Grid.Column="0" Margin="20,0,20,0">
+                <VerticalStackLayout Spacing="5">
+                    <Grid ColumnDefinitions="*, Auto">
+                        <Label Text="Фильтры" Style="{StaticResource SectionTitle}" Margin="0" Grid.Column="0" VerticalOptions="Center"/>
+                        <Button Grid.Column="1" Style="{StaticResource BorderButton}" local:IconHelper.Icon="{StaticResource FilterOff}" local:IconHelper.Color="CBackground" Command="{Binding FilterClearCommand}"/>
+                    </Grid>
+                    <HorizontalStackLayout Spacing="5">
+                        <Picker Title="Сортировка" SelectedItem="{Binding SelectedSort}" WidthRequest="150" ItemsSource="{Binding SortOptions}"/>
+                        <Entry Placeholder="Адрес" Text="{Binding CityFilter}" WidthRequest="120"/>
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+        
         <RefreshView Grid.Row="1" 
                      IsRefreshing="{Binding IsRefreshing}" 
                      Command="{Binding RefreshCommand}"
