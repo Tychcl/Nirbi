@@ -4,203 +4,99 @@ using nearby.Classes;
 using nearby.Interfaces;
 using nearby.Models;
 
-namespace nearby.Services;
-
-public class ChatService : IChatService
+namespace nearby.Services
 {
-    private readonly ApiClient _apiClient;
+    public class ChatService : IChatService
+    {
+        private readonly ApiClient _apiClient;
 
-    public ChatService(ApiClient apiClient)
-    {
-        _apiClient = apiClient;
-    }
-    //Метод получения чатов пользователя
-    public async Task<ApiResponse<List<Chat>>> GetChatsAsync(int page = 1, int limit = 20)
-    {
-        var response = await _apiClient.GetAsync($"chats?page={page}&limit={limit}");
-        if (response is null)
+        public ChatService(ApiClient apiClient) => _apiClient = apiClient;
+
+        public async Task<List<Chat>> GetChatsAsync()
         {
-            throw new Exception("Ошибка подключения к серверу");
+            var response = await _apiClient.GetAsync("chats");
+            if (response == null) throw new HttpRequestException("Ошибка подключения к серверу");
+            var json = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode) throw new HttpRequestException(json);
+            return JsonConvert.DeserializeObject<List<Chat>>(json) ?? new List<Chat>();
         }
-        var json = await response.Content.ReadAsStringAsync();
-        if (!response.IsSuccessStatusCode)
+
+        public async Task<List<User>> GetChatUsersAsync(Guid chatId)
         {
-            throw new Exception(json);
+            var response = await _apiClient.GetAsync($"chat/{chatId}/chatUsers");
+            if (response == null) throw new HttpRequestException("Ошибка подключения к серверу");
+            var json = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode) throw new HttpRequestException(json);
+            return JsonConvert.DeserializeObject<List<User>>(json) ?? new List<User>();
         }
-        var result = JsonConvert.DeserializeObject<ApiResponse<List<Chat>>>(json);
-        return result;
-    }
-    //мтеод получения информации о чате
-    public async Task<ApiResponse<DetailChatInfo>> GetChatByIdAsync(int chatId, int page = 1, int limit = 50)
-    {
-        var response = await _apiClient.GetAsync($"chats/{chatId}?page={page}&limit={limit}");
-        if (response is null)
+
+        // ---------- Сообщения ----------
+        public async Task<List<Message>> GetMessagesAsync(Guid chatId)
         {
-            throw new Exception("Ошибка подключения к серверу");
+            var response = await _apiClient.GetAsync($"chats/{chatId}/messages");
+            if (response == null) throw new HttpRequestException("Ошибка подключения к серверу");
+            var json = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode) throw new HttpRequestException(json);
+            return JsonConvert.DeserializeObject<List<Message>>(json) ?? new List<Message>();
         }
-        var json = await response.Content.ReadAsStringAsync();
-        if (!response.IsSuccessStatusCode)
+
+        public async Task<Guid> SendPrivateMessageAsync(Guid recipientId, string content)
         {
-            throw new Exception(json);
+            var body = new CreateMessagePrivateChatRequest { recipient = recipientId, content = content };
+            var json = JsonConvert.SerializeObject(body);
+            var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await _apiClient.PostAsync("messages/private", httpContent);
+            if (response == null) throw new HttpRequestException("Ошибка подключения к серверу");
+            json = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode) throw new HttpRequestException(json);
+            return JsonConvert.DeserializeObject<Guid>(json)!;
         }
-        var chatDetail = JsonConvert.DeserializeObject<DetailChatInfo>(json);
-        return new ApiResponse<DetailChatInfo>("", chatDetail);
-    }
-    //метод создания чата
-    public async Task<ApiResponse<int>> CreateChatAsync(string type, string? name, List<Guid> userIds)
-    {
-        var payload = new
+
+        public async Task<Guid> SendGroupMessageAsync(Guid chatId, string content)
         {
-            type,
-            name,
-            user_ids = userIds
-        };
-        var json = JsonConvert.SerializeObject(payload);
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
-        var response = await _apiClient.PostAsync("chats", content);
-        if (response is null)
-        {
-            throw new Exception("Ошибка подключения к серверу");
+            var body = new CreateMessageGroupChatRequest { chatId = chatId, content = content };
+            var json = JsonConvert.SerializeObject(body);
+            var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await _apiClient.PostAsync("messages/group", httpContent);
+            if (response == null) throw new HttpRequestException("Ошибка подключения к серверу");
+            json = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode) throw new HttpRequestException(json);
+            return JsonConvert.DeserializeObject<Guid>(json)!;
         }
-        json = await response.Content.ReadAsStringAsync();
-        Dictionary<string, object>? data;
-        if (!response.IsSuccessStatusCode)
+
+        public async Task<Message> UpdateMessageAsync(Guid messageId, string newContent)
         {
-            if(response.StatusCode == System.Net.HttpStatusCode.Conflict)
+            var body = new UpdateMessageRequest { messageId = messageId, content = newContent };
+            var json = JsonConvert.SerializeObject(body);
+            var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await _apiClient.PutAsync("messages", httpContent);
+            if (response == null) throw new HttpRequestException("Ошибка подключения к серверу");
+            json = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode) throw new HttpRequestException(json);
+            return JsonConvert.DeserializeObject<Message>(json)!;
+        }
+
+        public async Task DeleteMessageAsync(Guid messageId)
+        {
+            var response = await _apiClient.DeleteAsync($"messages/{messageId}");
+            if (response == null) throw new HttpRequestException("Ошибка подключения к серверу");
+            if (!response.IsSuccessStatusCode)
             {
-                data = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
-                if (data != null && data.TryGetValue("id", out var idVT) && idVT is long idLT)
-                {
-                    return new ApiResponse<int>("", (int)idLT);
-                }
+                var error = await response.Content.ReadAsStringAsync();
+                throw new HttpRequestException(error);
             }
-            throw new Exception(json);
         }
-        data = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
-        if (data != null && data.TryGetValue("id", out var idObj) && idObj is long idLong)
+
+        public async Task<List<ChatPreview>> GetMessagePreviewsAsync(List<Guid?> chatIds)
         {
-            return new ApiResponse<int>("", (int)idLong);
+            //var json = JsonConvert.SerializeObject(chatIds);
+            var url = "messages/preview?chatIds=" + string.Join("&chatIds=", chatIds);
+            //var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await _apiClient.GetAsync(url);
+            if (response == null) throw new HttpRequestException("Ошибка подключения к серверу");
+            var json = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode) throw new HttpRequestException(json);
+            return JsonConvert.DeserializeObject<List<ChatPreview>>(json) ?? new List<ChatPreview>();
         }
-        throw new Exception("Не известная ошибка");
-    }
-    //метод добавления пользователя в чат
-    public async Task<ApiResponse<bool>> AddMemberAsync(int chatId, Guid userId)
-    {
-        var payload = new { user_id = userId };
-        var json = JsonConvert.SerializeObject(payload);
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
-        var response = await _apiClient.PostAsync($"chats/{chatId}/members", content);
-        if (response is null)
-        {
-            throw new Exception("Ошибка подключения к серверу");
-        }
-        json = await response.Content.ReadAsStringAsync();
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new Exception(json);
-        }
-        return new ApiResponse<bool>(json, response.IsSuccessStatusCode);
-    }
-    //метод удаления пользователя из чата
-    public async Task<ApiResponse<bool>> RemoveMemberAsync(int chatId, Guid userId)
-    {
-        var response = await _apiClient.DeleteAsync($"chats/{chatId}/members/{userId}");
-        if (response is null)
-        {
-            throw new Exception("Ошибка подключения к серверу");
-        }
-        var json = await response.Content.ReadAsStringAsync();
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new Exception(json);
-        }
-        return new ApiResponse<bool>(json, response.IsSuccessStatusCode);
-    }
-    //метод отправки сообщения
-    public async Task<ApiResponse<Message>> SendMessageAsync(int chatId, MessageSendModel message)
-    {
-        var json = JsonConvert.SerializeObject(message);
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
-        var response = await _apiClient.PostAsync($"chats/{chatId}/messages", content);
-        if (response is null)
-        {
-            throw new Exception("Ошибка подключения к серверу");
-        }
-        json = await response.Content.ReadAsStringAsync();
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new Exception(json);
-        }
-        var data = JsonConvert.DeserializeObject<ApiResponse<Message>>(json);
-        return data;
-    }
-    //метод получения сообщений чата
-    public async Task<ApiResponse<nearby.Models.Messages>> GetMessagesAsync(int chatId, int page = 1, int limit = 50)
-    {
-        var response = await _apiClient.GetAsync($"chats/{chatId}/messages?page={page}&limit={limit}");
-        if (response is null)
-        {
-            throw new Exception("Ошибка подключения к серверу");
-        }
-        var json = await response.Content.ReadAsStringAsync();
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new Exception(json);
-        }
-        var messages = JsonConvert.DeserializeObject<nearby.Models.Messages>(json);
-        return new ApiResponse<nearby.Models.Messages>("", messages);
-    }
-    //метод отметки сообщения как прочитаного 
-    public async Task<ApiResponse<bool>> MarkMessagesAsReadAsync(int chatId, int messageId)
-    {
-        var response = await _apiClient.PutAsync($"chats/{chatId}/read?message_id={messageId}", null);
-        if (response is null)
-        {
-            throw new Exception("Ошибка подключения к серверу");
-        }
-        var json = await response.Content.ReadAsStringAsync();
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new Exception(json);
-        }
-        return new ApiResponse<bool>(json, response.IsSuccessStatusCode);
-    }
-    //метод редактирования сообщения
-    public async Task<ApiResponse<Message>> EditMessageAsync(int messageId, string newContent)
-    {
-        var payload = new { content = newContent };
-        var json = JsonConvert.SerializeObject(payload);
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
-        var response = await _apiClient.PutAsync($"chats/messages/{messageId}", content);
-        if (response is null)
-        {
-            throw new Exception("Ошибка подключения к серверу");
-        }
-        json = await response.Content.ReadAsStringAsync();
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new Exception(json);
-        }
-        var msg = new Message
-        {
-            Id = messageId,
-            Content = newContent
-        };
-        return new ApiResponse<Message>("", msg);
-    }
-    //метод удаления сообщения
-    public async Task<ApiResponse<bool>> DeleteMessageAsync(int messageId)
-    {
-        var response = await _apiClient.DeleteAsync($"chats/messages/{messageId}");
-        if (response is null)
-        {
-            throw new Exception("Ошибка подключения к серверу");
-        }
-        var json = await response.Content.ReadAsStringAsync();
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new Exception(json);
-        }
-        return new ApiResponse<bool>(json, response.IsSuccessStatusCode);
     }
 }

@@ -46,18 +46,17 @@ namespace nearby.Services
             return user;
         }
 
-        public async Task<User> UpdateUserByIdAsync(object updatedData, Guid? id = null)
+        public async Task<User> UpdateUserByIdAsync(Guid id, UpdateUserRequest data)
         {
-            id = id ?? _currentUserId;
-            var json = JsonConvert.SerializeObject(updatedData);
+            var json = JsonConvert.SerializeObject(data);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             var response = await _apiClient.PutAsync($"Users/{id}", content);
-            if (response is null)
-                throw new Exception("Неудается подключиться к серверу");
-            json = await response.Content.ReadAsStringAsync();
+            if (response == null)
+                throw new Exception("Не удаётся подключиться к серверу");
+            var responseBody = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode)
-                throw new Exception(json);
-            var user = await LoadUserByIdAsync(_currentUser.Id);
+                throw new Exception(responseBody);
+            var user = await LoadUserByIdAsync(id);
             return user;
         }
 
@@ -87,7 +86,8 @@ namespace nearby.Services
             if (response == null) throw new HttpRequestException("Не удалось подключиться к серверу");
             var json = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode) throw new Exception(json);
-            return JsonConvert.DeserializeObject<List<User>>(json) ?? new List<User>();
+            var r = JsonConvert.DeserializeObject<UsersSearchResponse>(json) ?? new UsersSearchResponse();
+            return r.Items;
         }
 
         public async Task<List<string>> GetAvailableFieldsAsync()

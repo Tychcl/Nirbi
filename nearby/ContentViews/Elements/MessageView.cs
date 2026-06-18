@@ -12,10 +12,10 @@ namespace nearby.ContentViews.Elements;
 public class MessageView : ContentView
 {
     public static readonly BindableProperty CurrentUserIdProperty =
-    BindableProperty.Create(nameof(CurrentUserId), typeof(int), typeof(MessageView), -1, propertyChanged: OnMessageChanged);
-    public int CurrentUserId
+    BindableProperty.Create(nameof(CurrentUserId), typeof(Guid), typeof(MessageView), default(Guid), propertyChanged: OnMessageChanged);
+    public Guid CurrentUserId
     {
-        get => (int)GetValue(CurrentUserIdProperty);
+        get => (Guid)GetValue(CurrentUserIdProperty);
         set => SetValue(CurrentUserIdProperty, value);
     }
 
@@ -35,33 +35,33 @@ public class MessageView : ContentView
         set => SetValue(SenderIsVisibleProperty, value);
     }
 
-    public static readonly BindableProperty HasReplyProperty =
-    BindableProperty.Create(nameof(HasReply), typeof(bool), typeof(MessageView), false);
-    public bool HasReply
-    {
-        get => (bool)GetValue(HasReplyProperty);
-        set => SetValue(HasReplyProperty, value);
-    }
+    //public static readonly BindableProperty HasReplyProperty =
+    //BindableProperty.Create(nameof(HasReply), typeof(bool), typeof(MessageView), false);
+    //public bool HasReply
+    //{
+    //    get => (bool)GetValue(HasReplyProperty);
+    //    set => SetValue(HasReplyProperty, value);
+    //}
 
-    public static readonly BindableProperty ReplyCommandProperty =
-        BindableProperty.Create(nameof(ReplyCommand), typeof(IAsyncRelayCommand), typeof(MessageView), null, BindingMode.OneWay, propertyChanged: OnReplyCommandChanged);
-    public IAsyncRelayCommand ReplyCommand
-    {
-        get => (IAsyncRelayCommand)GetValue(ReplyCommandProperty);
-        set => SetValue(ReplyCommandProperty, value);
-    }
-    private static void OnReplyCommandChanged(BindableObject bindable, object oldValue, object newValue)
-    {
-        var view = (MessageView)bindable;
-        if (view.Message.Reply is null) return;
-        view._replyBoxBorder.GestureRecognizers.Clear();
-        var TGR = new TapGestureRecognizer();
-        TGR.Tapped += async (s, e) =>
-        {
-            await view.ReplyCommand.ExecuteAsync(view.Message.Reply.Id);
-        };
-        view._replyBoxBorder.GestureRecognizers.Add(TGR);
-    }
+    //public static readonly BindableProperty ReplyCommandProperty =
+    //    BindableProperty.Create(nameof(ReplyCommand), typeof(IAsyncRelayCommand), typeof(MessageView), null, BindingMode.OneWay, propertyChanged: OnReplyCommandChanged);
+    //public IAsyncRelayCommand ReplyCommand
+    //{
+    //    get => (IAsyncRelayCommand)GetValue(ReplyCommandProperty);
+    //    set => SetValue(ReplyCommandProperty, value);
+    //}
+    //private static void OnReplyCommandChanged(BindableObject bindable, object oldValue, object newValue)
+    //{
+    //    var view = (MessageView)bindable;
+    //    if (view.Message.Reply is null) return;
+    //    view._replyBoxBorder.GestureRecognizers.Clear();
+    //    var TGR = new TapGestureRecognizer();
+    //    TGR.Tapped += async (s, e) =>
+    //    {
+    //        await view.ReplyCommand.ExecuteAsync(view.Message.Reply.Id);
+    //    };
+    //    view._replyBoxBorder.GestureRecognizers.Add(TGR);
+    //}
 
     public static readonly BindableProperty CommandProperty =
         BindableProperty.Create(nameof(Command), typeof(IAsyncRelayCommand), typeof(MessageView), null, BindingMode.OneWay, propertyChanged: OnCommandChanged);
@@ -83,6 +83,14 @@ public class MessageView : ContentView
         view.Content.GestureRecognizers.Add(TGR);
     }
 
+    public static readonly BindableProperty ChatProperty =
+        BindableProperty.Create(nameof(Chat), typeof(Chat), typeof(MessageView), null, propertyChanged: OnMessageChanged);
+    public Chat? Chat
+    {
+        get => (Chat?)GetValue(ChatProperty);
+        set => SetValue(MessageProperty, value);
+    }
+
     public static readonly BindableProperty MessageProperty = 
 		BindableProperty.Create(nameof(Message), typeof(Message), typeof(MessageView), null, propertyChanged: OnMessageChanged);
     public Message? Message
@@ -93,19 +101,20 @@ public class MessageView : ContentView
     private static void OnMessageChanged(BindableObject bindable, object oldValue, object newValue)
     {
         var view = (MessageView)bindable;
-        view.IsOwnMessage = view.Message?.SenderId == view.CurrentUserId;
-        view.SenderIsVisible = view.Message.ChatType != "personal" && !view.IsOwnMessage;
-        view.HasReply = view.Message.Reply is not null;
+        view.IsOwnMessage = view.Message?.Sender == view.CurrentUserId;
+        if (view.Chat is not null)
+            view.SenderIsVisible = !view.Chat.IsPersonalChat;
+        //view.HasReply = view.Message.Reply is not null;
     }
 
     private Label _content;
     private Label _date;
     private Grid _grid;
     private Label _sender;
-    private Label _reply;
-    private Label _replySender;
-    private VerticalStackLayout _replyBox;
-    private Border _replyBoxBorder;
+    //private Label _reply;
+    //private Label _replySender;
+    //private VerticalStackLayout _replyBox;
+    //private Border _replyBoxBorder;
     public Point? point;
     public MessageView()
 	{
@@ -122,48 +131,48 @@ public class MessageView : ContentView
         _sender.SetBinding(Label.TextProperty, new Binding(nameof(Message.SenderName)));
         _sender.SetBinding(Label.IsVisibleProperty, new Binding(nameof(SenderIsVisible), source: this));
 
-        _replySender = new Label()
-        {
-            Style = LS,
-            MaxLines = 1,
-            HorizontalOptions = LayoutOptions.Start,
-            Margin = new Thickness(0),
-            Padding = new Thickness(0),
-            LineBreakMode = LineBreakMode.TailTruncation
-        };
-        _replySender.SetBinding(Label.TextProperty, new Binding("Reply.SenderName"));
-        _replySender.SetDynamicResource(Label.TextColorProperty, "CPrimary");
-        _replySender.SetDynamicResource(Label.FontSizeProperty, "SecondaryFontSize");
+        //_replySender = new Label()
+        //{
+        //    Style = LS,
+        //    MaxLines = 1,
+        //    HorizontalOptions = LayoutOptions.Start,
+        //    Margin = new Thickness(0),
+        //    Padding = new Thickness(0),
+        //    LineBreakMode = LineBreakMode.TailTruncation
+        //};
+        //_replySender.SetBinding(Label.TextProperty, new Binding("Reply.SenderName"));
+        //_replySender.SetDynamicResource(Label.TextColorProperty, "CPrimary");
+        //_replySender.SetDynamicResource(Label.FontSizeProperty, "SecondaryFontSize");
 
-        _reply = new Label()
-        {
-            Style = LS,
-            MaxLines = 1,
-            HorizontalOptions = LayoutOptions.Start,
-            Margin = new Thickness(0),
-            Padding = new Thickness(0),
-            LineBreakMode = LineBreakMode.TailTruncation
-        };
-        _reply.SetBinding(Label.TextProperty, new Binding("Reply.Content"));
-        _reply.SetDynamicResource(Label.FontSizeProperty, "SecondaryFontSize");
+        //_reply = new Label()
+        //{
+        //    Style = LS,
+        //    MaxLines = 1,
+        //    HorizontalOptions = LayoutOptions.Start,
+        //    Margin = new Thickness(0),
+        //    Padding = new Thickness(0),
+        //    LineBreakMode = LineBreakMode.TailTruncation
+        //};
+        //_reply.SetBinding(Label.TextProperty, new Binding("Reply.Content"));
+        //_reply.SetDynamicResource(Label.FontSizeProperty, "SecondaryFontSize");
 
-        _replyBoxBorder = new Border
-        {
-            Style = (Style)ResourceManager.Get("EditSection"),
-            Margin = new Thickness(0),
-            Padding = 4,
-            Content = new VerticalStackLayout()
-            {
-                Children =
-                {
-                    _replySender,
-                    _reply
-                }
-            },
-            StrokeShape = new RoundRectangle { CornerRadius = 6 }
-        };
-        _replyBoxBorder.SetBinding(Border.IsVisibleProperty, new Binding(nameof(HasReply), source: this));
-        _replyBoxBorder.SetDynamicResource(Border.StrokeProperty, "CSuccess");
+        //_replyBoxBorder = new Border
+        //{
+        //    Style = (Style)ResourceManager.Get("EditSection"),
+        //    Margin = new Thickness(0),
+        //    Padding = 4,
+        //    Content = new VerticalStackLayout()
+        //    {
+        //        Children =
+        //        {
+        //            _replySender,
+        //            _reply
+        //        }
+        //    },
+        //    StrokeShape = new RoundRectangle { CornerRadius = 6 }
+        //};
+        //_replyBoxBorder.SetBinding(Border.IsVisibleProperty, new Binding(nameof(HasReply), source: this));
+        //_replyBoxBorder.SetDynamicResource(Border.StrokeProperty, "CSuccess");
 
         _content = new Label()
         {
@@ -195,7 +204,7 @@ public class MessageView : ContentView
             MaximumWidthRequest = 300
         };
         _grid.Add( _sender, row: 0);
-        _grid.Add( _replyBoxBorder, row: 1);
+        //_grid.Add( _replyBoxBorder, row: 1);
         _grid.Add( _content, row: 2);
         _grid.Add( _date, row: 3);
 

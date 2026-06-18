@@ -16,8 +16,14 @@ namespace nearby.Services
 
         public async Task<TaskItem> CreateTaskAsync(CreateMinorTaskRequest request)
         {
-            var json = JsonConvert.SerializeObject(request);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            using var content = new MultipartFormDataContent();
+            content.Add(new StringContent(request.Name ?? ""), "Name");
+            content.Add(new StringContent(request.Description ?? ""), "Description");
+            content.Add(new StringContent(request.Latitude.ToString(CultureInfo.InvariantCulture)), "Latitude");
+            content.Add(new StringContent(request.Longitude.ToString(CultureInfo.InvariantCulture)), "Longitude");
+            content.Add(new StringContent(request.NumberVolunteers.ToString()), "NumberVolunteers");
+            content.Add(new StringContent(request.Encouragement.ToString(CultureInfo.InvariantCulture)), "Encouragement");
+
             var response = await _apiClient.PostAsync("tasks", content);
             if (response == null) throw new HttpRequestException("Ошибка подключения к серверу");
             var responseBody = await response.Content.ReadAsStringAsync();
@@ -146,12 +152,13 @@ namespace nearby.Services
 
     public class CreateMinorTaskRequest
     {
-        public string? name { get; set; }
-        public string? description { get; set; }
-        public double latitude { get; set; }
-        public double longitude { get; set; }
-        public int numberVolunteers { get; set; }
-        public double encouragement { get; set; }
+        public string? Name { get; set; }
+        public string? Description { get; set; }
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+        public int NumberVolunteers { get; set; }
+        public double Encouragement { get; set; }
+        public Guid Images { get; set; } = default;
     }
 
     public class UpdateMinorTaskRequest

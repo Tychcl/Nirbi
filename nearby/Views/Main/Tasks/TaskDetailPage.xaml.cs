@@ -73,6 +73,14 @@ public partial class TaskDetailPage : ContentPage
         pin.Callout.Anchor = new Point(0.5, 1);
         pin.Callout.RectRadius = 0;
         taskMap.Pins.Add(pin);
+        var mPoint = SphericalMercator.FromLonLat(location.Longitude, location.Latitude).ToMPoint();
+        taskMap.Map.Navigator.CenterOnAndZoomTo(mPoint, 7);
         taskMap.Refresh();
+    }
+
+    private void Button_Clicked(object sender, EventArgs e)
+    {
+        BorderMap.IsVisible = !BorderMap.IsVisible;
+        OpenCloseMapBtn.Text = BorderMap.IsVisible ? "Скрыть карту" : "Показать карту";
     }
 }

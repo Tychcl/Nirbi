@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Threading;
+using CommunityToolkit.Maui.Core.Extensions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using nearby.Interfaces;
@@ -16,22 +17,16 @@ namespace nearby.ViewModels
         private readonly IChatService _chatService;
 
         [ObservableProperty]
-        private string? _searchQuery;
+        private string? _firstMessage;
 
         [ObservableProperty]
-        private bool _isGroup;
+        private string? _searchQuery;
 
         [ObservableProperty]
         private bool _searchResultsVisibilitty;
 
         [ObservableProperty]
         private ObservableCollection<User> _searchResults = new();
-
-        [ObservableProperty]
-        private ObservableCollection<User> _selectedUsers = new();
-
-        [ObservableProperty]
-        private string? _chatName;
 
         private CancellationTokenSource? _debounceCts;
 
@@ -52,7 +47,6 @@ namespace nearby.ViewModels
             _debounceCts?.Cancel();
             _debounceCts = new CancellationTokenSource();
             var token = _debounceCts.Token;
-
             try
             {
                 await Task.Delay(300, token);
@@ -76,11 +70,7 @@ namespace nearby.ViewModels
                 var response = await _userService.GetUsersAsync(search: query, fields: new List<string>() { "firstName", "secondName", "lastName", "username", "email", "phone" });
                 if (response == null) return;
                 SearchResults.Clear();
-                foreach (var user in response)
-                {
-                    if (!SelectedUsers.Any(u => u.Id == user.Id) && user.Id != _userService.CurrentUser.Id)
-                        SearchResults.Add(user);
-                }
+                SearchResults = response.ToObservableCollection();
             }
             catch (Exception ex)
             {
@@ -93,30 +83,33 @@ namespace nearby.ViewModels
         }
 
         [RelayCommand]
-        private void AddUser(User user)
+        private async void AddUser(User user)
         {
-            if (user == null) return;
-            if (SelectedUsers.Any(u => u.Id == user.Id)) return;
-            SelectedUsers.Add(user);
-            IsGroup = SelectedUsers.Count > 1;
-            SearchResults.Remove(user);
-            CreateChatCommand.NotifyCanExecuteChanged();
-        }
-
-        [RelayCommand]
-        private void RemoveUser(User user)
-        {
-            if (user == null) return;
-            SelectedUsers.Remove(user);
-            IsGroup = SelectedUsers.Count > 1;
-            if (!string.IsNullOrWhiteSpace(SearchQuery) &&
-                (user.FullName?.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) == true ||
-                 user.Phone?.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) == true ||
-                 user.Email?.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) == true))
+            try
             {
-                SearchResults.Add(user);
+                if (user == null) return;
+                var chats = await _chatService.GetChatsAsync();
+                var chat = chats.FirstOrDefault(x => x.ChatUsers.Contains(user.Id));
+                if (chat is null)
+                {
+                    if (string.IsNullOrEmpty(FirstMessage))
+                    {
+                        await ShowErrorAsync("Нужно написать первое сообщение");
+                        return;
+                    }
+                    await _chatService.SendPrivateMessageAsync(user.Id, FirstMessage.Trim());
+                    chats = await _chatService.GetChatsAsync();
+                    chat = chats.FirstOrDefault(x => x.ChatUsers.Contains(user.Id));
+                }
+                chat.Name = user.FullName;
+                await GoBackCommand.ExecuteAsync(null);
+                await Shell.Current.GoToAsync(nameof(ChatDetailPage), new Dictionary<string, object?> { { "chat", chat } });
+            } 
+            catch (Exception ex)
+            {
+                await ShowErrorAsync(ex.Message);
             }
-            CreateChatCommand.NotifyCanExecuteChanged();
+            
         }
 
         [RelayCommand]
@@ -125,32 +118,6 @@ namespace nearby.ViewModels
             SearchQuery = string.Empty;
         }
 
-        [RelayCommand(CanExecute = nameof(CanCreateChat))]
-        private async Task CreateChat()
-        {
-            if (SelectedUsers.Count == 0) return;
-            IsBusy = true;
-            try
-            {
-                string type = SelectedUsers.Count == 1 ? "personal" : "group";
-                string? name = type == "group" ? ChatName?.Trim() : null;
-
-                if (type == "group" && string.IsNullOrWhiteSpace(name))
-                    throw new Exception("Введите название группы");
-
-                var userIds = SelectedUsers.Select(u => u.Id).ToList();
-                var response = await _chatService.CreateChatAsync(type, name, userIds);
-                await Shell.Current.GoToAsync($"{nameof(ChatDetailPage)}?id={response.Data}");
-            }
-            catch (Exception ex)
-            {
-                await ShowErrorAsync(ex.Message);
-            }
-            finally
-            {
-                IsBusy = false;
-            }
-        }
-        private bool CanCreateChat() => SelectedUsers.Count > 0 && !IsBusy;
+        private bool CanCreateChat() => !IsBusy;
     }
 }

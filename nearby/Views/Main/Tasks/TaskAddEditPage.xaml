@@ -51,6 +51,20 @@
                 <Border Style="{StaticResource EditSection}">
                     <VerticalStackLayout>
                         <Label Style="{StaticResource SectionTitle}" Text="Место выполнения"/>
+                        <Grid ColumnDefinitions="*, *" ColumnSpacing="10">
+                            <VerticalStackLayout Grid.Column="0">
+                                <Label Style="{StaticResource EditLabel}" Text="Широта" HorizontalTextAlignment="Center"/>
+                                <Label Style="{StaticResource EditEntry}" Text="{Binding SelectedLocation.Latitude}" HorizontalTextAlignment="Center"/>
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="1">
+                                <Label Style="{StaticResource EditLabel}" Text="Долгота" HorizontalTextAlignment="Center"/>
+                                <Label Style="{StaticResource EditEntry}" Text="{Binding SelectedLocation.Longitude}" HorizontalTextAlignment="Center"/>
+                            </VerticalStackLayout>
+                        </Grid>
+                        <VerticalStackLayout>
+                            <Label Style="{StaticResource EditLabel}" Text="Адрес"/>
+                            <Label Style="{StaticResource EditEntry}" Text="{Binding LocationAddress}"/>
+                        </VerticalStackLayout>
                         <Button x:Name="OpenCloseMapBtn" Style="{StaticResource BorderButton}" Text="Показать карту" Clicked="Button_Clicked"/>
                     </VerticalStackLayout>
                 </Border>

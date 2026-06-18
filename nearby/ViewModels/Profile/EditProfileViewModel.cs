@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using nearby.Classes;
 using nearby.Interfaces;
 using nearby.Models;
+using nearby.Models.Api;
 using nearby.Services;
 
 namespace nearby.ViewModels
@@ -50,24 +51,29 @@ namespace nearby.ViewModels
                 if (string.IsNullOrWhiteSpace(User.FullName))
                     throw new Exception("ФИО обязательно для заполнения");
 
-                var updatedData = new
+                var updateRequest = new UpdateUserRequest
                 {
-                    firstName = User.Name,
-                    secondName = User.Surname,
-                    lastName = User.Patronymic,
-                    phone = User.Phone,
-                    email = User.Email,
-                    birthDate = User.BirthDate,
-                    city = User.City,
-                    about = User.About,
-                    educationPlace = User.EducationInstitution,
-                    educationStartYear = User.EducationStartYear,
-                    educationEndYear = User.EducationEndYear,
-                    educationField = User.EducationField,
-                    currentPassword = CurrentPassword
+                    Id = User.Id.ToString(),
+                    FirstName = User.Name,
+                    SecondName = User.Surname,
+                    LastName = User.Patronymic,
+                    Phone = User.Phone,
+                    Email = User.Email,
+                    BirthDate = User.BirthDate?.ToString("yyyy-MM-dd"),
+                    City = User.City,
+                    About = User.About,
+                    EducationPlace = User.EducationInstitution,
+                    EducationStartYear = User.EducationStartYear?.ToString(),
+                    EducationEndYear = User.EducationEndYear?.ToString(),
+                    EducationField = User.EducationField,
+                    Vk = User.VK,
+                    Tg = User.TG,
+                    Max = User.MAX,
+                    CurrentPassword = CurrentPassword,
+                    NewPassword = null   // если не меняем пароль, оставляем пустым
                 };
 
-                var r = await _userService.UpdateUserByIdAsync(updatedData);
+                await _userService.UpdateUserByIdAsync(User.Id, updateRequest);
                 await Application.Current.MainPage.DisplayAlert("Успех", "Данные сохранены", "OK");
                 await Application.Current.MainPage.Navigation.PopModalAsync();
             }
@@ -75,7 +81,6 @@ namespace nearby.ViewModels
             {
                 await ShowErrorAsync(ex.Message);
             }
-            
         }
     }
 }

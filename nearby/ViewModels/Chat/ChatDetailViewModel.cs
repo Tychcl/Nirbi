@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Reflection.Metadata;
+using System.Windows.Markup;
+using CommunityToolkit.Maui.Core.Extensions;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -16,15 +18,12 @@ namespace nearby.ViewModels
     {
         Edit, Reply
     }
-    [QueryProperty(nameof(ChatId), "id")]
+    [QueryProperty(nameof(Chat), "chat")]
     public partial class ChatDetailViewModel : BaseViewModel
     {
         private readonly IChatService _chatService;
         private readonly IUserService _userService;
 
-        private const int PageSize = 50;
-        private int _currentPage = 1;
-        private bool _hasMoreMessages = true;
         public PopupMenu MessageOwnerPopup;
         private ObservableCollection<PopupItem> MessageOwnerPopupItems;
         public PopupMenu MessageNotOwnerPopup;
@@ -57,18 +56,31 @@ namespace nearby.ViewModels
         [ObservableProperty]
         private string? _currentActionIcon;
 
-
         [ObservableProperty]
-        private Guid _curentUserId;
-
-        [ObservableProperty]
-        private int _chatId;
-
+        private Guid? _curentUserId;
         [ObservableProperty]
         private Chat? _chat;
+        async partial void OnChatChanged(Chat? value)
+        {
+            if (value is not null && value.Id is not null)
+            {
+                IsBusy = true;
+                try
+                {
+                    PageTitle = value.Name;
+                    await LoadMessagesBaseAsync(true);
+                }
+                finally
+                {
+                    if (CV is not null)
+                        CV.ScrollTo(Messages.Last(), position: ScrollToPosition.MakeVisible, animate: false);
+                    IsBusy = false;
+                }
+            }
+        }
 
-        [ObservableProperty]
-        private ObservableCollection<User> _participants = new();
+
+        private Guid _recipientId;
 
         [ObservableProperty]
         private ObservableCollection<Message> _messages = new();
@@ -81,15 +93,13 @@ namespace nearby.ViewModels
         [ObservableProperty]
         private Message? _selectedMessage;
 
-        public Guid CurrentUserId => (Guid)_userService.CurrentUserId;
 
         public ChatDetailViewModel(IChatService chatService, IUserService userService)
         {
             _chatService = chatService;
             _userService = userService;
-            CurentUserId = (Guid)_userService.CurrentUserId;
-
-            MessageNotOwnerPopupItems.Add(new((string)ResourceManager.Get("Reply"), "Ответить", ReplyMessageCommand));
+            CurentUserId = _userService.CurrentUserId; 
+            //MessageNotOwnerPopupItems.Add(new((string)ResourceManager.Get("Reply"), "Ответить", ReplyMessageCommand));
             MessageNotOwnerPopupItems.Add(new((string)ResourceManager.Get("Copy"), "Копировать", CopyMessageCommand));
             
             MessageOwnerPopupItems = new(MessageNotOwnerPopupItems)
@@ -102,54 +112,13 @@ namespace nearby.ViewModels
             MessageOwnerPopup = PopupManager.Create(MessageOwnerPopupItems, new Thickness(0));
         }
 
-        async partial void OnChatIdChanged(int value)
-        {
-            if (value > 0)
-            {
-                IsBusy = true;
-                try
-                {
-                    await LoadChatDetailAsync();
-                    await LoadMessagesBaseAsync(true);
-                }
-                finally
-                {
-                    IsBusy = false;
-                }
-            }
-        }
-
-        partial void OnChatChanged(Chat? value)
-        {
-            if (value != null)
-                PageTitle = value.OtherUser?.FullName ?? "Чат";
-        }
+        
         protected override void OnBusyStateChanged(bool isBusy)
         {
             base.OnBusyStateChanged(isBusy);
             RefreshCommands();
         }
         partial void OnNewMessageTextChanged(string value) => SendMessageCommand.NotifyCanExecuteChanged();
-
-        private async Task LoadChatDetailAsync()
-        {
-            try
-            {
-                var response = await _chatService.GetChatByIdAsync(ChatId, _currentPage, PageSize);
-                if (response.Data != null)
-                {
-                    Chat = response.Data.Chat;
-                    Participants.Clear();
-                    if (response.Data.Participants != null)
-                        foreach (var p in response.Data.Participants)
-                            Participants.Add(p);
-                }
-            }
-            catch (Exception ex)
-            {
-                await ShowErrorAsync(ex.Message);
-            }
-        }
 
         [RelayCommand]
         private async Task LoadMessages() => await LoadMessagesBaseAsync(true);
@@ -163,30 +132,19 @@ namespace nearby.ViewModels
             {
                 if (reset)
                 {
-                    _currentPage = 1;
-                    _hasMoreMessages = true;
                     Messages.Clear();
                 }
-
-                if (!_hasMoreMessages) return;
-
-                var response = await _chatService.GetMessagesAsync(ChatId, _currentPage, PageSize);
-
-                if (response.Data?.Data != null && response.Data.Data.Any())
+                if (Chat.IsPersonalChat)
+                    _recipientId = Chat.ChatUsers.FirstOrDefault(x => x != _userService.CurrentUserId);
+                Chat.ChatUsersFullNames = await _userService.GetUserFullNamesAsync(Chat.ChatUsers);
+                Chat.ChatUsersFullNamesDict = Chat.ChatUsersFullNames.ToDictionary(
+                    fn => fn.Id, fn => $"{fn.SecondName} {fn.FirstName} {fn.LastName}");
+                var response = await _chatService.GetMessagesAsync((Guid)Chat.Id);
+                response = response.Where(x => !x.IsDeleted).ToList();
+                if (response != null && response.Any())
                 {
-                    var newMessages = response.Data.Data.OrderBy(m => m.CreatedAt).ToList();
-                    foreach (var msg in newMessages)
-                    {
-                        msg.ChatType = Chat.Type;
-                        Messages.Add(msg);
-                    }
-                    _currentPage++;
-                    if (response.Data.Data.Count < PageSize)
-                        _hasMoreMessages = false;
-                }
-                else
-                {
-                    _hasMoreMessages = false;
+                    response.ConvertAll(x => x.SenderName = Chat.ChatUsersFullNamesDict.GetValueOrDefault(x.Sender, "Неизвестный"));
+                    Messages = response.ToObservableCollection();
                 }
             }
             catch (Exception ex)
@@ -204,8 +162,9 @@ namespace nearby.ViewModels
                 var newText = NewMessageText;
                 NewMessageText = string.Empty;
                 if (string.IsNullOrWhiteSpace(newText)) return;
-                var result = await _chatService.EditMessageAsync(message.Id, newText);
+                await _chatService.UpdateMessageAsync(message.Id, newText);
                 message.Content = newText;
+                message.IsUpdated = true;
                 var index = Messages.IndexOf(message);
                 if (index >= 0)
                     Messages[index] = message;
@@ -216,26 +175,31 @@ namespace nearby.ViewModels
                 await ShowErrorAsync(ex.Message);
             }
         }
-        private async Task SendMessageTask(int? reply = null)
+        private async Task SendMessageTask(Guid? reply = null)
         {
             try
             {
                 var mes = NewMessageText.Trim();
                 if (string.IsNullOrWhiteSpace(mes)) return;
-                var messageModel = new MessageSendModel { content_type = "text", content = mes, reply = reply };
-                var response = await _chatService.SendMessageAsync(ChatId, messageModel);
-                //var newMessage = new Message
-                //{
-                //    Id = response.Data?.Id ?? 0,
-                //    Content = mes,
-                //    ContentType = "text",
-                //    CreatedAt = DateTime.UtcNow,
-                //    SenderId = CurrentUserId,
-                //    SenderName = _userService.CurrentUser?.FullName ?? "Вы",
-                //    SenderProfilePicture = _userService.CurrentUser?.ProfilePicture
-                //};
-                Messages.Add(response.Data);
+                Guid messageId;
+                if (Chat.IsPersonalChat)
+                {
+                    messageId = await _chatService.SendPrivateMessageAsync(_recipientId, NewMessageText);
+                }
+                else
+                {
+                    messageId = await _chatService.SendGroupMessageAsync((Guid)Chat.Id, NewMessageText);
+                }
+                var newMessage = new Message
+                {
+                    Id = messageId,
+                    Sender = (Guid)CurentUserId,
+                    ChatId = (Guid)Chat.Id,
+                    CreatedAt = DateTime.Now,
+                    Content = mes,
+                };
                 NewMessageText = string.Empty;
+                Messages.Add(newMessage);
             }
             catch (Exception ex)
             {
@@ -254,10 +218,10 @@ namespace nearby.ViewModels
                     case ChatAction.Edit:
                         await EditMessageTask();
                         break;
-                    case ChatAction.Reply:
-                        await SendMessageTask(SelectedMessage.Id);
-                        SelectedMessage = null;
-                        break;
+                    //case ChatAction.Reply:
+                    //    await SendMessageTask(SelectedMessage.Id);
+                    //    SelectedMessage = null;
+                    //    break;
                     default:
                         await SendMessageTask();
                         break;
@@ -281,27 +245,27 @@ namespace nearby.ViewModels
             CurrentAction = null;
         }
 
-        [RelayCommand]
-        private async Task AddMember()
-        {
-           
-        }
+        //[RelayCommand]
+        //private async Task AddMember()
+        //{
+        //   
+        //}
 
-        [RelayCommand(CanExecute = nameof(CanModifyMember))]
-        private async Task RemoveMember(User user)
-        {
-            try
-            {
-                var confirm = await Application.Current!.MainPage!.DisplayAlert("Удаление", $"Удалить {user.FullName} из чата?", "Да", "Нет");
-                if (!confirm) return;
-                var result = await _chatService.RemoveMemberAsync(ChatId, user.Id);
-                Participants.Remove(user);
-            }
-            catch (Exception ex)
-            {
-                await ShowErrorAsync(ex.Message);
-            }
-        }
+        //[RelayCommand(CanExecute = nameof(CanModifyMember))]
+        //private async Task RemoveMember(User user)
+        //{
+        //    try
+        //    {
+        //        var confirm = await Application.Current!.MainPage!.DisplayAlert("Удаление", $"Удалить {user.FullName} из чата?", "Да", "Нет");
+        //        if (!confirm) return;
+        //        var result = await _chatService.RemoveMemberAsync(ChatId, user.Id);
+        //        Participants.Remove(user);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        await ShowErrorAsync(ex.Message);
+        //    }
+        //}
         private bool CanModifyMember() => !IsBusy;
 
         [RelayCommand(CanExecute = nameof(CanModifyMessage))]
@@ -339,20 +303,20 @@ namespace nearby.ViewModels
         [RelayCommand(CanExecute = nameof(CanModifyMessage))]
         private async Task DeleteMessage()
         {
-            try
-            {
+           try
+           {
                 if (SelectedMessage is not Message message) return;
                 SelectedMessage = null;
                 var confirm = await Application.Current!.MainPage!.DisplayAlert("Удаление", "Удалить сообщение?", "Да", "Нет");
                 if (!confirm) return;
                 await PopupManager.navigation.ClosePopupAsync();
-                var result = await _chatService.DeleteMessageAsync(message.Id);
+                await _chatService.DeleteMessageAsync(message.Id);
                 Messages.Remove(message);
-            }
-            catch (Exception ex)
-            {
-                await ShowErrorAsync(ex.Message);
-            }
+           }
+           catch (Exception ex)
+           {
+               await ShowErrorAsync(ex.Message);
+           }
         }
         private bool CanModifyMessage() => !IsBusy;
 
@@ -383,15 +347,15 @@ namespace nearby.ViewModels
         [RelayCommand]
         private async Task GoToReplyedMessage(int? id)
         {
-            if (id is null || CV is null) return;
-            CV.ScrollTo(Messages.First(x => x.Id == id));
+            //if (id is null || CV is null) return;
+            //CV.ScrollTo(Messages.First(x => x.Id == id));
         }
 
         private void RefreshCommands()
         {
             SendMessageCommand.NotifyCanExecuteChanged();
-            AddMemberCommand.NotifyCanExecuteChanged();
-            RemoveMemberCommand.NotifyCanExecuteChanged();
+            //AddMemberCommand.NotifyCanExecuteChanged();
+            //RemoveMemberCommand.NotifyCanExecuteChanged();
             EditMessageCommand.NotifyCanExecuteChanged();
             DeleteMessageCommand.NotifyCanExecuteChanged();
             LoadMessagesCommand.NotifyCanExecuteChanged();

@@ -11,13 +11,13 @@
              x:DataType="viewModels:ChatDetailViewModel"
              Shell.TabBarIsVisible="False">
     <Shell.TitleView>
-        <header:BaseHeaderView BackIsVisible="True" MenuIsVisible="True" Icon="{StaticResource MenuDots}">
+        <header:BaseHeaderView BackIsVisible="True" Icon="{StaticResource MenuDots}">
             <header:BaseHeaderView.ExtraContent>
                 <HorizontalStackLayout Margin="0,5" Spacing="5" VerticalOptions="Center">
                     <element:ProfileImageView ImageSize="45"/>
                     <VerticalStackLayout VerticalOptions="Center">
                         <Label Style="{StaticResource SectionTitle}" Text="{Binding Chat.Name, FallbackValue='Чат'}" Padding="0" Margin="0" VerticalTextAlignment="Start" FontFamily="OpenSansBold"/>
-                        <Label Style="{StaticResource CommonLabel}" Text="{Binding Chat.OtherUser.LastSeenAt, FallbackValue='Чат'}" Padding="0" VerticalTextAlignment="Start" TextColor="{DynamicResource CTextSecondary}"/>
+                        <Label Style="{StaticResource CommonLabel}" Text="{Binding Chat.Type, FallbackValue='Чат'}" Padding="0" VerticalTextAlignment="Start" TextColor="{DynamicResource CTextSecondary}"/>
                     </VerticalStackLayout>
                 </HorizontalStackLayout>
             </header:BaseHeaderView.ExtraContent>
@@ -26,18 +26,15 @@
     <Grid RowDefinitions="*, Auto">
         <CollectionView ItemsSource="{Binding Messages}"
                         SelectionMode="None" Grid.Row="0"
-                        RemainingItemsThreshold="3"
-                        RemainingItemsThresholdReachedCommand="{Binding LoadMoreMessagesCommand}"
                         VerticalOptions="End"
                         x:Name="ChatCollectionView"
-                        ItemsUpdatingScrollMode="KeepLastItemInView"
-                        MaximumHeightRequest="716">
+                        ItemsUpdatingScrollMode="KeepLastItemInView">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:Message">
                         <element:MessageView 
                             CurrentUserId="{Binding Source={RelativeSource AncestorType={x:Type viewModels:ChatDetailViewModel}}, Path=CurentUserId}" 
                             Command="{Binding Source={RelativeSource AncestorType={x:Type viewModels:ChatDetailViewModel}}, Path=OpenMenuCommand}"
-                            ReplyCommand="{Binding Source={RelativeSource AncestorType={x:Type viewModels:ChatDetailViewModel}}, Path=GoToReplyedMessageCommand}"
+                            Chat="{Binding Source={RelativeSource AncestorType={x:Type viewModels:ChatDetailViewModel}}, Path=Chat}"
                             Message="{Binding .}"/>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>

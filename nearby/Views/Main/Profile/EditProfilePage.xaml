@@ -53,31 +53,44 @@
             <Border Style="{StaticResource EditSection}">
                 <VerticalStackLayout>
                     <Label Style="{StaticResource SectionTitle}" Text="Контакты"/>
-                    <Label Style="{StaticResource EditLabel}" Text="Город"/>
-                    <Entry Style="{StaticResource EditEntry}"
-                               Text="{Binding User.City, Mode=TwoWay}"
-                               Placeholder="Ваш город"/>
-                    <Label Style="{StaticResource EditLabel}" Text="Дата рождения"/>
-                    <DatePicker Date="{Binding User.BirthDate, Mode=TwoWay}"
-                                    Format="dd.MM.yyyy"
-                                    TextColor="{DynamicResource CTextPrimary}"
-                                    BackgroundColor="{DynamicResource CSurface}"
-                                    Margin="0,0,0,12"/>
                     <Label Style="{StaticResource EditLabel}" Text="Телефон"/>
                     <Entry Style="{StaticResource EditEntry}"
                                Text="{Binding User.Phone, Mode=TwoWay}"
                                Placeholder="+7 (___) ___-__-__"
                                Keyboard="Telephone"/>
-                    <Label Style="{StaticResource EditLabel}" Text="Email"/>
+                    <Label Style="{StaticResource EditLabel}" Text="Почта"/>
                     <Entry Style="{StaticResource EditEntry}"
                                Text="{Binding User.Email, Mode=TwoWay}"
                                Placeholder="email@example.com"
                                Keyboard="Email"/>
+                    <Label Style="{StaticResource EditLabel}" Text="ВКонтакте"/>
+                    <Entry Style="{StaticResource EditEntry}"
+                           Text="{Binding User.VK, Mode=TwoWay}"
+                           Placeholder="Id или ссылка"/>
+                    <Label Style="{StaticResource EditLabel}" Text="МАХ"/>
+                    <Entry Style="{StaticResource EditEntry}"
+                           Text="{Binding User.MAX, Mode=TwoWay}"
+                           Placeholder="Контакты в МАХ"/>
+                    <Label Style="{StaticResource EditLabel}" Text="Телеграм"/>
+                    <Entry Style="{StaticResource EditEntry}"
+                           Text="{Binding User.TG, Mode=TwoWay}"
+                           Placeholder="@username или ссылка"/>
                 </VerticalStackLayout>
             </Border>
             <Border Style="{StaticResource EditSection}">
                 <VerticalStackLayout>
                     <Label Style="{StaticResource SectionTitle}" Text="О себе"/>
+                    <Label Style="{StaticResource EditLabel}" Text="Город"/>
+                    <Entry Style="{StaticResource EditEntry}"
+           Text="{Binding User.City, Mode=TwoWay}"
+           Placeholder="Ваш город"/>
+                    <Label Style="{StaticResource EditLabel}" Text="Дата рождения"/>
+                    <DatePicker Date="{Binding User.BirthDate, Mode=TwoWay}"
+                Format="dd.MM.yyyy"
+                TextColor="{DynamicResource CTextPrimary}"
+                BackgroundColor="{DynamicResource CSurface}"
+                Margin="0,0,0,12"/>
+                    <Label Style="{StaticResource EditLabel}" Text="О себе"/>
                     <Editor Style="{StaticResource EditEditor}"
                                 Text="{Binding About, Mode=TwoWay}"
                                 Placeholder="Расскажите немного о себе..."
@@ -94,11 +107,7 @@
                     <Entry Style="{StaticResource EditEntry}"
                                Text="{Binding User.EducationInstitution, Mode=TwoWay}"
                                Placeholder="Название вуза/колледжа"/>
-                    <Label Style="{StaticResource EditLabel}" Text="Степень / Специальность"/>
-                    <Entry Style="{StaticResource EditEntry}"
-                               Text="{Binding User.EducationDegree, Mode=TwoWay}"
-                               Placeholder="Бакалавр, Магистр и т.д."/>
-                    <Label Style="{StaticResource EditLabel}" Text="Направление"/>
+                    <Label Style="{StaticResource EditLabel}" Text="Направление / Специальность"/>
                     <Entry Style="{StaticResource EditEntry}"
                                Text="{Binding User.EducationField, Mode=TwoWay}"
                                Placeholder="IT, Экономика, Медицина..."/>

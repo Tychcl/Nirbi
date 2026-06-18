@@ -4,20 +4,32 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace nearby.Models;
 
 public class Message
 {
-    public int Id { get; set; }
-    public int SenderId { get; set; }
-    public string SenderName { get; set; }
-    public string? SenderProfilePicture { get; set; }
-    public string ContentType { get; set; }
-    public string Content { get; set; }
-    public string FileUrl { get; set; }
-    public string TranscribedText { get; set; }
-    public DateTime? CreatedAt { get; set; }
-    public string ChatType {  get; set; }
-    public Message Reply {  get; set; }
+    [JsonProperty("id")]
+    public Guid Id { get; set; }
+
+    [JsonProperty("sender")]
+    public Guid Sender { get; set; }
+    [JsonIgnore]
+    public string? SenderName { get; set; }
+
+    [JsonProperty("chatId")]
+    public Guid ChatId { get; set; }
+
+    [JsonProperty("createdAt")]
+    public DateTime CreatedAt { get; set; }
+
+    [JsonProperty("isUpdated")]
+    public bool IsUpdated { get; set; } = false;
+
+    [JsonProperty("isDeleted")]
+    public bool IsDeleted { get; set; } = false;
+
+    [JsonProperty("content")]
+    public string? Content { get; set; }
 }

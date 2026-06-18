@@ -16,7 +16,7 @@
             <Border Style="{StaticResource EditSection}">
                 <elements:MiniUserProfile User="{Binding User}">
                     <VerticalStackLayout Grid.Column="2" VerticalOptions="Center" Spacing="8">
-                        <Border Style="{StaticResource Button}" 
+                        <!--<Border Style="{StaticResource Button}" 
                                 WidthRequest="70" HeightRequest="70"
                                 IsVisible="{Binding IsOwnProfile, Converter={StaticResource InverseBoolConverter}}"
                                 Margin="0">
@@ -24,7 +24,7 @@
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding StartChatCommand}"/>
                             </Border.GestureRecognizers>
-                        </Border>
+                        </Border>-->
                         <Border Style="{StaticResource Button}" 
                                 WidthRequest="70" HeightRequest="70"
                                 Stroke="{DynamicResource CError}"
@@ -51,8 +51,17 @@
                                                       Title="Почта" 
                                                       Text="{Binding User.Email}"/>
                             <elements:ContactView Image="{StaticResource Send}" 
+                                                      Title="ВКонтакте" 
+                                                      Text="{Binding User.VK}"
+                                                      IsVisible="{Binding User.VK, Converter={StaticResource IsNotNullConverter}}"/>
+                            <elements:ContactView Image="{StaticResource Send}" 
+                                                      Title="МАХ" 
+                                                      Text="{Binding User.MAX}"
+                                                  IsVisible="{Binding User.VK, Converter={StaticResource IsNotNullConverter}}"/>
+                            <elements:ContactView Image="{StaticResource Send}" 
                                                       Title="Телеграм" 
-                                                      Text="@Tychcl"/>
+                                                      Text="{Binding User.TG}"
+                                                  IsVisible="{Binding User.VK, Converter={StaticResource IsNotNullConverter}}"/>
                         </HorizontalStackLayout>
                     </ScrollView>
                 </VerticalStackLayout>
@@ -62,7 +71,7 @@
                     <Label Style="{StaticResource SectionTitle}" Text="О себе"/>
                     <Label Style="{StaticResource EditEntry}" 
                                Text="{Binding User.About}"
-                               LineBreakMode="WordWrap"/>
+                               LineBreakMode="WordWrap" Margin="0"/>
                 </VerticalStackLayout>
             </Border>
             <Border Style="{StaticResource EditSection}" 
@@ -72,14 +81,10 @@
                     <VerticalStackLayout Spacing="4">
                         <Label Style="{StaticResource EditEntry}" 
                                    Text="{Binding User.EducationInstitution}"
-                                   FontAttributes="Bold"/>
+                                   FontAttributes="Bold" Margin="0"/>
                         <Label Style="{StaticResource EditLabel}" 
-                                   Text="{Binding User.EducationField}"/>
-                        <Label Style="{StaticResource EditLabel}" 
-                                   Text="{Binding User.EducationDegree}" 
-                                   TextColor="{DynamicResource CTextSecondary}"/>
-
-                        <Label TextColor="{DynamicResource CTextSecondary}" Margin="0,8,0,0">
+                                   Text="{Binding User.EducationField}" Margin="0"/>
+                        <Label TextColor="{DynamicResource CTextSecondary}" Margin="0">
                             <Label.Text>
                                 <MultiBinding StringFormat="{}{0} — {1}">
                                     <Binding Path="User.EducationStartYear"/>

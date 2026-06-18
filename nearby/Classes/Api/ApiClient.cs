@@ -32,6 +32,7 @@ public class ApiClient
             if (!string.IsNullOrEmpty(token))
                 request.Headers.Add("Authorization", $"Bearer {token}");
             var response = await _httpClient.SendAsync(request);
+            var j = await response.Content.ReadAsStringAsync();
             if (refresh && response.StatusCode == HttpStatusCode.Unauthorized)
             {
                 var auth = await RefreshAsync(await _tokenService.GetTokenAsync(TokenService.TokenKey.Refresh));

@@ -14,6 +14,7 @@ namespace nearby.ViewModels
     {
         private readonly IChatService _chatService;
         private readonly IServiceProvider _serviceProvider;
+        private readonly IUserService _userService;
 
         [ObservableProperty]
         private ObservableCollection<Chat> _chats = new();
@@ -32,14 +33,11 @@ namespace nearby.ViewModels
             LoadMoreCommand.NotifyCanExecuteChanged();
         }
 
-        private int _currentPage = 1;
-        private bool _hasMorePages = true;
-        private const int PageSize = 20;
-
-        public ChatsViewModel(IChatService chatService, IServiceProvider serviceProvider)
+        public ChatsViewModel(IChatService chatService, IServiceProvider serviceProvider, IUserService userService)
         {
             _chatService = chatService;
             _serviceProvider = serviceProvider;
+            _userService = userService;
         }
 
         [RelayCommand]
@@ -49,7 +47,7 @@ namespace nearby.ViewModels
         [RelayCommand(CanExecute = nameof(CanLoadMore))]
         private async Task LoadMoreAsync() => await LoadChatsBaseAsync(false);
         private bool CanRefresh() => !IsBusy;
-        private bool CanLoadMore() => !IsBusy && _hasMorePages;
+        private bool CanLoadMore() => !IsBusy;
 
         private async Task LoadChatsBaseAsync(bool reset)
         {
@@ -59,16 +57,13 @@ namespace nearby.ViewModels
                 IsBusy = true;
                 if (reset)
                 {
-                    _currentPage = 1;
-                    _hasMorePages = true;
                     Chats.Clear();
                 }
-
-                if (!_hasMorePages) return;
-
                 IsRefreshing = true;
-                var response = await _chatService.GetChatsAsync(_currentPage, PageSize);
-                await GetChats(response.Data);
+                var response = await _chatService.GetChatsAsync();
+                var previews = await _chatService.GetMessagePreviewsAsync(response.Select(x => x.Id).ToList());
+                response.ConvertAll(c => c.Preview = previews.FirstOrDefault(x => x.ChatId == c.Id));
+                await GetChats(response);
             }
             catch (Exception ex)
             {
@@ -90,21 +85,22 @@ namespace nearby.ViewModels
             if (chats != null && chats.Any())
             {
                 foreach (var chat in chats)
+                {
+                    if (chat.IsPersonalChat)
+                    {
+                        Guid id = chat.ChatUsers.First(x => x != _userService.CurrentUserId);
+                        var name = await _userService.GetUserFullNamesAsync(new List<Guid>() { id });
+                        chat.Name = $"{name[0].SecondName} {name[0].FirstName} {name[0].LastName}";
+                    }
                     Chats.Add(chat);
-                _currentPage++;
-                if (chats.Count < PageSize)
-                    _hasMorePages = false;
-            }
-            else
-            {
-                _hasMorePages = false;
+                }
             }
         }
 
         [RelayCommand]
         private async Task GoToChatDetailAsync(Chat chat)
         {
-            await Shell.Current.GoToAsync(nameof(ChatDetailPage), new Dictionary<string, object?> { { "id", chat.Id } });
+            await Shell.Current.GoToAsync(nameof(ChatDetailPage), new Dictionary<string, object?> { { "chat", chat } });
         }
 
         [RelayCommand]

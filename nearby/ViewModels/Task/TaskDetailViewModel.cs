@@ -338,11 +338,12 @@ public partial class TaskDetailViewModel : BaseViewModel, IDisposable
     {
         try
         {
+            await popupMenu.CloseAsync();
             var confirm = await Application.Current!.MainPage!.DisplayAlert("Удаление", "Удалить задачу?", "Да", "Нет");
             if (!confirm) return;
             await _taskService.DeleteTaskAsync(Task.Id);
             await GoBackCommand.ExecuteAsync(null);
-            await ShowMsgAsync("Успех", "Задача удалена", "OK");
+            //await ShowMsgAsync("Успех", "Задача удалена", "OK");
         }
         catch
         {
@@ -362,11 +363,29 @@ public partial class TaskDetailViewModel : BaseViewModel, IDisposable
     {
         try
         {
-            var r = await _chatService.CreateChatAsync("personal", "", new() { Creator.Id, _userService.CurrentUser.Id });
-            if (r is ApiResponse<int>)
+            User user = Creator;
+            var chats = await _chatService.GetChatsAsync();
+            var chat = chats.FirstOrDefault(x => x.ChatUsers.Contains(user.Id));
+            if (chat is null)
             {
-                await Shell.Current.GoToAsync(nameof(ChatDetailPage), new Dictionary<string, object?> { { "id", r.Data } });
+                string result = await Application.Current.MainPage.DisplayPromptAsync(
+                    "Отправить сообщение",
+                    "Введите сообщение:",
+                    accept: "OK",
+                    cancel: "Отмена",
+                    placeholder: "Привет!!!",
+                    keyboard: Keyboard.Default);
+                if (string.IsNullOrEmpty(result))
+                {
+                    await ShowErrorAsync("Нужно написать первое сообщение");
+                    return;
+                }
+                await _chatService.SendPrivateMessageAsync(user.Id, result.Trim());
+                chat = chats.FirstOrDefault(x => x.ChatUsers.Contains(user.Id));
             }
+            chat.Name = user.FullName;
+            await GoBackCommand.ExecuteAsync(null);
+            await Shell.Current.GoToAsync(nameof(ChatDetailPage), new Dictionary<string, object?> { { "chat", chat } });
         }
         catch (Exception ex)
         {

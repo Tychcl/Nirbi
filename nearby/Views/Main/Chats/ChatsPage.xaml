@@ -17,8 +17,7 @@
                  VerticalOptions="Fill">
         <CollectionView ItemsSource="{Binding Chats}"
                             SelectionMode="None"
-                            RemainingItemsThreshold="3"
-                            RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}">
+                            RemainingItemsThreshold="3">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:Chat">
                     <Border Style="{StaticResource Card}" Padding="5">
@@ -30,21 +29,12 @@
                             <element:ProfileImageView Grid.Column="0" ImageSize="50" Image="test_profile_image.jpg"/>
                             <VerticalStackLayout Grid.Column="1" VerticalOptions="Start" Spacing="2">
                                 <Label Text="{Binding Name}" Style="{StaticResource BoldCommonLabel}"/>
-                                <Label Text="{Binding LastMessage.Content, FallbackValue='Сообщений пока нет :с', TargetNullValue='Сообщений пока нет :с'}" Style="{StaticResource CommonLabel}" TextColor="{DynamicResource CTextSecondary}" MaxLines="1" LineBreakMode="TailTruncation"/>
+                                <Label Text="{Binding Preview.Content, FallbackValue='Сообщений пока нет :с', TargetNullValue='Сообщений пока нет :с'}" Style="{StaticResource CommonLabel}" TextColor="{DynamicResource CTextSecondary}" MaxLines="1" LineBreakMode="TailTruncation"/>
                             </VerticalStackLayout>
                             <VerticalStackLayout Grid.Column="2" VerticalOptions="Start" Spacing="4">
-                                <Label Text="{Binding LastMessage.CreatedAt, StringFormat='{0:dd.MM HH:mm}'}"
+                                <Label Text="{Binding Preview.CreatedAt, StringFormat='{0:dd.MM HH:mm}'}"
                                            Style="{StaticResource SecondaryCommonLabel}"
                                            HorizontalOptions="End"/>
-                                <Border Background="{DynamicResource CPrimary}"
-                                            StrokeThickness="0"
-                                            StrokeShape="RoundRectangle 10"
-                                            Padding="6,2"
-                                            HorizontalOptions="End"
-                                            VerticalOptions="End"
-                                            IsVisible="{Binding UnreadCount, Converter={StaticResource GreaterThanConverter}, ConverterParameter='0'}">
-                                    <Label Text="{Binding UnreadCount}" TextColor="{DynamicResource CBackground}" Style="{StaticResource SecondaryCommonLabel}"/>
-                                </Border>
                             </VerticalStackLayout>
                         </Grid>
                     </Border>

@@ -71,9 +71,11 @@
                                     <Label Text="Принят" TextColor="{DynamicResource CSuccess}" IsVisible="{Binding IsAccepted}" VerticalOptions="Center"/>
                                     <Label Text="Отклонён" TextColor="{DynamicResource CError}" IsVisible="{Binding IsRejected}" VerticalOptions="Center"/>
                                     <Label Text="Отозван" TextColor="{DynamicResource CTextSecondary}" IsVisible="{Binding IsRevoked}" VerticalOptions="Center"/>
-                                    <Button Text="Отозвать" IsVisible="{Binding IsPending}" 
-                                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewModels:ConfirmationsViewModel}}, Path=RevokeCommand}"
-                                            CommandParameter="{Binding Id}" />
+                                    <Grid IsVisible="{Binding Source={RelativeSource AncestorType={x:Type viewModels:ConfirmationsViewModel}}, Path=IsReceivedSelected, Converter={StaticResource InverseBoolConverter}}">
+                                        <Button Text="Отозвать" IsVisible="{Binding IsPending}" 
+        Command="{Binding Source={RelativeSource AncestorType={x:Type viewModels:ConfirmationsViewModel}}, Path=RevokeCommand}"
+        CommandParameter="{Binding Id}" />
+                                    </Grid>
                                 </HorizontalStackLayout>
                             </Grid>
                             <Grid ColumnDefinitions="*, Auto">

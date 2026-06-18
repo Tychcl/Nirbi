@@ -108,18 +108,18 @@ namespace nearby.ViewModels
         [RelayCommand]
         private async Task StartChatAsync()
         {
-            try
-            {
-                var r = await _chatService.CreateChatAsync("personal", "", new() { User.Id, _userService.CurrentUser.Id });
-                if (r is ApiResponse<int>)
-                {
-                    await Shell.Current.GoToAsync(nameof(ChatDetailPage), new Dictionary<string, object?> { { "id", r.Data } });
-                }
-            }
-            catch (Exception ex)
-            {
-                await ShowErrorAsync(ex.Message);
-            }
+            //try
+            //{
+            //    var r = await _chatService.CreateChatAsync("personal", "", new() { User.Id, _userService.CurrentUser.Id });
+            //    if (r is ApiResponse<int>)
+            //    {
+            //        await Shell.Current.GoToAsync(nameof(ChatDetailPage), new Dictionary<string, object?> { { "id", r.Data } });
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    await ShowErrorAsync(ex.Message);
+            //}
         }
 
         [RelayCommand(CanExecute = nameof(IsOwnProfile))]

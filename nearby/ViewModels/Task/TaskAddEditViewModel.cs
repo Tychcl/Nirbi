@@ -224,13 +224,12 @@ public partial class TaskAddEditViewModel : BaseViewModel, IDisposable
             {
                 var request = new CreateMinorTaskRequest
                 {
-                    name = _task.Title,
-                    description = _task.Description,
-                    latitude = _task.Latitude ?? 0,
-                    longitude = _task.Longitude ?? 0,
-                    numberVolunteers = _task.NeededVolunteers,
-                    encouragement = (double)_task.Reward,
-                    //images = null
+                    Name = _task.Title,
+                    Description = _task.Description,
+                    Latitude = _task.Latitude ?? 0,
+                    Longitude = _task.Longitude ?? 0,
+                    NumberVolunteers = _task.NeededVolunteers,
+                    Encouragement = (double)_task.Reward
                 };
                 var createdTask = await _taskService.CreateTaskAsync(request);
                 _task.Id = createdTask.Id;

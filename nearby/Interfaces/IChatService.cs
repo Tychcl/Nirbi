@@ -1,18 +1,19 @@
-using nearby.Classes;
 using nearby.Models;
 
-namespace nearby.Interfaces;
-
-public interface IChatService
+namespace nearby.Interfaces
 {
-    Task<ApiResponse<List<Chat>>> GetChatsAsync(int page = 1, int limit = 20);
-    Task<ApiResponse<DetailChatInfo>> GetChatByIdAsync(int chatId, int page = 1, int limit = 50);
-    Task<ApiResponse<int>> CreateChatAsync(string type, string? name, List<Guid> userIds);
-    Task<ApiResponse<bool>> AddMemberAsync(int chatId, Guid userId);
-    Task<ApiResponse<bool>> RemoveMemberAsync(int chatId, Guid userId);
-    Task<ApiResponse<Message>> SendMessageAsync(int chatId, MessageSendModel message);
-    Task<ApiResponse<nearby.Models.Messages>> GetMessagesAsync(int chatId, int page = 1, int limit = 50);
-    Task<ApiResponse<bool>> MarkMessagesAsReadAsync(int chatId, int messageId);
-    Task<ApiResponse<Message>> EditMessageAsync(int messageId, string newContent);
-    Task<ApiResponse<bool>> DeleteMessageAsync(int messageId);
+    public interface IChatService
+    {
+        // Чаты
+        Task<List<Chat>> GetChatsAsync();
+        Task<List<User>> GetChatUsersAsync(Guid chatId);
+
+        // Сообщения
+        Task<List<Message>> GetMessagesAsync(Guid chatId);
+        Task<Guid> SendPrivateMessageAsync(Guid recipientId, string content);
+        Task<Guid> SendGroupMessageAsync(Guid chatId, string content);
+        Task<Message> UpdateMessageAsync(Guid messageId, string newContent);
+        Task DeleteMessageAsync(Guid messageId);
+        Task<List<ChatPreview>> GetMessagePreviewsAsync(List<Guid?> chatIds);
+    }
 }
